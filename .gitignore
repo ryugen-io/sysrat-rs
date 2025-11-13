@@ -30,3 +30,6 @@
 
 # OS
 Thumbs.db
+
+# Server PID file
+.server.pid
