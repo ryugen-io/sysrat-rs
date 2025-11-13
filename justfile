@@ -34,3 +34,7 @@ run:
 clean:
     cargo clean
     cd frontend && cargo clean
+
+# Count lines of code
+loc:
+    fish -c "locode rs"
