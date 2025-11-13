@@ -32,6 +32,11 @@ pub fn handle_keys(state: &mut AppState, state_rc: &Rc<RefCell<AppState>>, key_e
                             st.set_status("[OK]".to_string());
                         }
                         Err(e) => {
+                            {
+                                let mut st = state_clone.borrow_mut();
+                                st.editor.clear();
+                                st.dirty = false;
+                            }
                             status_helper::set_status_timed(
                                 &state_clone,
                                 format!("[ERROR loading: {}]", utils::error::format_error(&e)),

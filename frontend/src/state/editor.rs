@@ -29,4 +29,10 @@ impl EditorState {
     pub fn get_content(&self) -> String {
         self.textarea.lines().join("\n")
     }
+
+    pub fn clear(&mut self) {
+        self.current_file = None;
+        self.original_content = String::new();
+        self.textarea = TextArea::default();
+    }
 }
