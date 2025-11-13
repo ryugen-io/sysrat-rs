@@ -25,8 +25,4 @@ impl FileListTheme {
     pub fn selected_prefix() -> &'static str {
         "> "
     }
-
-    pub fn normal_prefix() -> &'static str {
-        "  "
-    }
 }

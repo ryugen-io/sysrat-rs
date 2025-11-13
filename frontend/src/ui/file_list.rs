@@ -6,7 +6,7 @@ use ratzilla::ratatui::{
     Frame,
     layout::Rect,
     text::{Line, Span},
-    widgets::{Block, Borders, List, ListItem},
+    widgets::{Block, Borders, List, ListItem, ListState},
 };
 
 pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
@@ -22,35 +22,26 @@ pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
         .file_list
         .files
         .iter()
-        .enumerate()
-        .map(|(i, file)| {
-            let is_selected = i == state.file_list.selected_index;
-
-            let style = if is_selected {
-                FileListTheme::selected_item_style()
-            } else {
-                FileListTheme::normal_item_style()
-            };
-
-            let prefix = if is_selected {
-                FileListTheme::selected_prefix()
-            } else {
-                FileListTheme::normal_prefix()
-            };
-
+        .map(|file| {
             ListItem::new(Line::from(vec![Span::styled(
-                format!("{}{}", prefix, file.name),
-                style,
+                &file.name,
+                FileListTheme::normal_item_style(),
             )]))
         })
         .collect();
 
-    let list = List::new(items).block(
-        Block::default()
-            .title("Config Files")
-            .borders(Borders::ALL)
-            .border_style(border_style),
-    );
+    let list = List::new(items)
+        .block(
+            Block::default()
+                .title("Config Files")
+                .borders(Borders::ALL)
+                .border_style(border_style),
+        )
+        .highlight_style(FileListTheme::selected_item_style())
+        .highlight_symbol(FileListTheme::selected_prefix());
 
-    f.render_widget(list, area);
+    let mut list_state = ListState::default();
+    list_state.select(Some(state.file_list.selected_index));
+
+    f.render_stateful_widget(list, area, &mut list_state);
 }
