@@ -1,42 +1,10 @@
+use super::types::{
+    FileContentResponse, FileListResponse, WriteConfigRequest, WriteConfigResponse,
+};
 use axum::{Json, extract::Path, http::StatusCode};
-use serde::{Deserialize, Serialize};
-use tokio::process::Command;
 
 // Config file directory - could be made configurable
 const CONFIG_DIR: &str = "/tmp/config-manager-configs";
-
-#[derive(Serialize)]
-pub struct FileListResponse {
-    files: Vec<String>,
-}
-
-#[derive(Serialize)]
-pub struct FileContentResponse {
-    content: String,
-}
-
-#[derive(Deserialize)]
-pub struct WriteConfigRequest {
-    content: String,
-}
-
-#[derive(Serialize)]
-pub struct WriteConfigResponse {
-    success: bool,
-}
-
-#[derive(Serialize, Clone)]
-pub struct ContainerInfo {
-    pub id: String,
-    pub name: String,
-    pub state: String,
-    pub status: String,
-}
-
-#[derive(Serialize)]
-pub struct ContainerListResponse {
-    containers: Vec<ContainerInfo>,
-}
 
 // GET /api/configs - List all config files
 pub async fn list_configs() -> Result<Json<FileListResponse>, (StatusCode, String)> {
@@ -137,49 +105,4 @@ pub async fn write_config(
             format!("Write error: {}", e),
         )),
     }
-}
-
-// GET /api/containers - List all Docker containers
-pub async fn list_containers() -> Result<Json<ContainerListResponse>, (StatusCode, String)> {
-    // Execute docker ps command
-    let output = Command::new("docker")
-        .args([
-            "ps",
-            "-a",
-            "--format",
-            "{{.ID}}\t{{.Names}}\t{{.State}}\t{{.Status}}",
-        ])
-        .output()
-        .await
-        .map_err(|e| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Failed to execute docker command: {}", e),
-            )
-        })?;
-
-    if !output.status.success() {
-        let error = String::from_utf8_lossy(&output.stderr);
-        return Err((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Docker command failed: {}", error),
-        ));
-    }
-
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let mut containers = Vec::new();
-
-    for line in stdout.lines() {
-        let parts: Vec<&str> = line.split('\t').collect();
-        if parts.len() >= 4 {
-            containers.push(ContainerInfo {
-                id: parts[0].to_string(),
-                name: parts[1].to_string(),
-                state: parts[2].to_string(),
-                status: parts[3].to_string(),
-            });
-        }
-    }
-
-    Ok(Json(ContainerListResponse { containers }))
 }
