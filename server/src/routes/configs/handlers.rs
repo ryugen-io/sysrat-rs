@@ -35,7 +35,7 @@ pub async fn read_config(
     // Wildcard routes include leading slash, strip it
     let filename = filename.strip_prefix('/').unwrap_or(&filename);
 
-    validate_filename(filename)?;
+    validate_filename(filename, &config)?;
 
     // Look up file in config
     let file_config = config.get_file(filename).ok_or((
@@ -67,7 +67,7 @@ pub async fn write_config(
     // Wildcard routes include leading slash, strip it
     let filename = filename.strip_prefix('/').unwrap_or(&filename);
 
-    validate_filename(filename)?;
+    validate_filename(filename, &config)?;
 
     // Look up file in config
     let file_config = config.get_file(filename).ok_or((

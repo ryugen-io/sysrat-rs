@@ -1,9 +1,14 @@
 # Config Manager - Meta Configuration
 # Define which system files to manage
 
+# Global settings
+[settings]
+# Allowed file extensions for security (whitelist)
+allowed_extensions = ["conf", "toml", "txt", "sh", "fish", "rs", "json", "yaml", "yml", "ini", "env"]
+
 # Each file entry specifies:
 # - path: Absolute path to the file on the system
-# - name: Display name in the UI (must end with .conf or .toml)
+# - name: Display name in the UI
 # - description: Optional description
 # - readonly: Optional, if true the file cannot be edited
 

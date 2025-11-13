@@ -1,5 +1,6 @@
 use crate::api;
 use crate::state::{AppState, Pane, refresh, status_helper};
+use crate::utils;
 use ratzilla::event::{KeyCode, KeyEvent};
 use std::{cell::RefCell, rc::Rc};
 use wasm_bindgen_futures::spawn_local;
@@ -33,7 +34,7 @@ pub fn handle_keys(state: &mut AppState, state_rc: &Rc<RefCell<AppState>>, key_e
                         Err(e) => {
                             status_helper::set_status_timed(
                                 &state_clone,
-                                format!("Error loading: {:?}", e),
+                                format!("Error loading: {}", utils::error::format_error(&e)),
                             );
                         }
                     }

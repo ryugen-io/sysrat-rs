@@ -5,6 +5,7 @@ mod state;
 mod storage;
 mod theme;
 mod ui;
+mod utils;
 
 use ratzilla::{DomBackend, WebRenderer};
 use state::{AppState, Pane};
@@ -54,7 +55,7 @@ pub fn main() -> Result<(), JsValue> {
                             storage::generic::clear("file-list");
                             state::status_helper::set_status_timed(
                                 &state_clone,
-                                format!("Error loading files: {:?}", e),
+                                format!("Error loading files: {}", utils::error::format_error(&e)),
                             );
                         }
                     }

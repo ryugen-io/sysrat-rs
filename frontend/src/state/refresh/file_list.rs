@@ -1,4 +1,5 @@
 use crate::state::{AppState, status_helper};
+use crate::utils;
 use std::{cell::RefCell, rc::Rc};
 use wasm_bindgen_futures::spawn_local;
 
@@ -19,7 +20,7 @@ pub fn refresh_file_list(state_rc: &Rc<RefCell<AppState>>) {
                 crate::storage::generic::clear("file-list");
                 status_helper::set_status_timed(
                     &state_clone,
-                    format!("Error loading files: {:?}", e),
+                    format!("Error loading files: {}", utils::error::format_error(&e)),
                 );
             }
         }

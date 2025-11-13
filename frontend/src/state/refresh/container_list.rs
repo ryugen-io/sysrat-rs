@@ -1,4 +1,5 @@
 use crate::state::{AppState, status_helper};
+use crate::utils;
 use gloo_timers::callback::Interval;
 use std::{cell::RefCell, rc::Rc};
 use wasm_bindgen_futures::spawn_local;
@@ -20,7 +21,10 @@ pub fn refresh_container_list(state_rc: &Rc<RefCell<AppState>>) {
                 crate::storage::generic::clear("container-list");
                 status_helper::set_status_timed(
                     &state_clone,
-                    format!("Error loading containers: {:?}", e),
+                    format!(
+                        "Error loading containers: {}",
+                        utils::error::format_error(&e)
+                    ),
                 );
             }
         }

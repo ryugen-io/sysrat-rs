@@ -1,6 +1,7 @@
 use crate::{
     api,
     state::{AppState, Pane, refresh},
+    utils,
 };
 use ratzilla::event::{KeyCode, KeyEvent};
 use std::{cell::RefCell, rc::Rc};
@@ -45,7 +46,7 @@ pub fn save_file(state: Rc<RefCell<AppState>>, filename: String, content: String
             }
             Err(e) => {
                 let mut st = state.borrow_mut();
-                st.set_status(format!("Error saving: {:?}", e));
+                st.set_status(format!("Error saving: {}", utils::error::format_error(&e)));
             }
         }
     });

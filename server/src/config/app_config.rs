@@ -7,6 +7,7 @@ use std::sync::Arc;
 #[derive(Debug, Clone)]
 pub struct AppConfig {
     files_by_name: HashMap<String, ConfigFile>,
+    allowed_extensions: Vec<String>,
 }
 
 impl AppConfig {
@@ -20,18 +21,14 @@ impl AppConfig {
         let config: Config =
             toml::from_str(&content).map_err(|e| format!("Failed to parse config: {}", e))?;
 
+        // Store allowed extensions
+        let allowed_extensions = config.settings.allowed_extensions.clone();
+
         // Build hashmap for fast lookups
         let mut files_by_name = HashMap::new();
 
-        // Add individual files
+        // Add individual files (no extension validation - config is trusted)
         for file in config.files {
-            // Validate name ends with .conf or .toml
-            if !file.name.ends_with(".conf") && !file.name.ends_with(".toml") {
-                return Err(format!(
-                    "File name must end with .conf or .toml: {}",
-                    file.name
-                ));
-            }
             files_by_name.insert(file.name.clone(), file);
         }
 
@@ -52,7 +49,10 @@ impl AppConfig {
             }
         }
 
-        Ok(AppConfig { files_by_name })
+        Ok(AppConfig {
+            files_by_name,
+            allowed_extensions,
+        })
     }
 
     /// Get all file names
@@ -65,6 +65,11 @@ impl AppConfig {
     /// Get config for a specific file
     pub fn get_file(&self, name: &str) -> Option<&ConfigFile> {
         self.files_by_name.get(name)
+    }
+
+    /// Get allowed file extensions
+    pub fn allowed_extensions(&self) -> &[String] {
+        &self.allowed_extensions
     }
 
     /// Get the config file path

@@ -1,5 +1,19 @@
 use serde::Deserialize;
 
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct Settings {
+    #[serde(default = "default_allowed_extensions")]
+    pub allowed_extensions: Vec<String>,
+}
+
+fn default_allowed_extensions() -> Vec<String> {
+    // Fallback if not specified in config (basic config file types)
+    ["conf", "toml", "txt", "ini", "env"]
+        .iter()
+        .map(|s| s.to_string())
+        .collect()
+}
+
 #[derive(Debug, Clone, Deserialize)]
 pub struct ConfigFile {
     pub path: String,
@@ -30,6 +44,8 @@ fn default_depth() -> usize {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Config {
+    #[serde(default)]
+    pub settings: Settings,
     #[serde(default)]
     pub files: Vec<ConfigFile>,
     #[serde(default)]

@@ -1,12 +1,12 @@
+use crate::config::SharedConfig;
 use axum::http::StatusCode;
 
-/// Allowed file extensions for config files
-const ALLOWED_EXTENSIONS: &[&str] = &[
-    "conf", "toml", "txt", "sh", "fish", "rs", "json", "yaml", "yml", "ini", "env",
-];
-
 /// Validates a filename for security
-pub(super) fn validate_filename(filename: &str) -> Result<(), (StatusCode, String)> {
+/// Extension whitelist is loaded from config-manager.toml
+pub(super) fn validate_filename(
+    filename: &str,
+    config: &SharedConfig,
+) -> Result<(), (StatusCode, String)> {
     // Security: No path traversal or Windows paths
     // Forward slashes (/) are allowed for directory-scanned files
     if filename.contains("..") || filename.contains('\\') {
@@ -16,8 +16,9 @@ pub(super) fn validate_filename(filename: &str) -> Result<(), (StatusCode, Strin
     // Extract extension from filename (handle paths with slashes)
     let actual_filename = filename.rsplit('/').next().unwrap_or(filename);
 
-    // Check if extension is whitelisted
-    let has_valid_extension = ALLOWED_EXTENSIONS
+    // Check if extension is whitelisted (from config)
+    let allowed_extensions = config.allowed_extensions();
+    let has_valid_extension = allowed_extensions
         .iter()
         .any(|ext| actual_filename.ends_with(&format!(".{}", ext)));
 
@@ -26,7 +27,7 @@ pub(super) fn validate_filename(filename: &str) -> Result<(), (StatusCode, Strin
             StatusCode::BAD_REQUEST,
             format!(
                 "File extension not allowed. Allowed: {}",
-                ALLOWED_EXTENSIONS.join(", ")
+                allowed_extensions.join(", ")
             ),
         ));
     }
