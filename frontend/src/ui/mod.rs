@@ -24,7 +24,7 @@ pub fn render(f: &mut Frame, state: &AppState) {
         .direction(Direction::Vertical)
         .constraints([
             Constraint::Min(0),    // Main content
-            Constraint::Length(1), // Status line
+            Constraint::Length(2), // Status line (2 rows: status + build info)
         ])
         .split(f.area());
 

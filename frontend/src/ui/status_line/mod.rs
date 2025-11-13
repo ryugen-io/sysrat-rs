@@ -8,13 +8,17 @@ use ratzilla::ratatui::{
 };
 
 pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
-    // Split status line into left and right sections
-    // Right needs more space for build date + tech stack
-    let chunks = Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints([Constraint::Percentage(55), Constraint::Percentage(45)])
+    // Split status line into 2 rows
+    // Row 1: Status info (mode, file, messages, help)
+    // Row 2: Build info (versions, dates)
+    let rows = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Length(1), Constraint::Length(1)])
         .split(area);
 
-    left::render(f, state, chunks[0]);
-    right::render(f, chunks[1]);
+    // Row 1: Status info (full width)
+    left::render(f, state, rows[0]);
+
+    // Row 2: Build info (full width, right aligned)
+    right::render(f, rows[1]);
 }
