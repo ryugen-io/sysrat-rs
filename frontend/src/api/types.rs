@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize, Clone)]
+#[derive(Deserialize, Serialize, Clone, PartialEq)]
 pub struct FileInfo {
     pub name: String,
     pub description: String,
@@ -22,7 +22,7 @@ pub(super) struct WriteConfigRequest {
     pub content: String,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, PartialEq)]
 pub struct ContainerInfo {
     pub id: String,
     pub name: String,

@@ -42,9 +42,11 @@ pub fn main() -> Result<(), JsValue> {
                 spawn_local(async move {
                     match api::fetch_file_list().await {
                         Ok(files) => {
-                            // Save to cache for next session
-                            storage::generic::save("file-list", &files);
                             let mut st = state_clone.borrow_mut();
+                            // Only save to cache if data changed
+                            if st.file_list.files != files {
+                                storage::generic::save("file-list", &files);
+                            }
                             st.file_list.set_files(files);
                             st.set_status("Restored session");
                         }

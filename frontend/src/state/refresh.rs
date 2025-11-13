@@ -34,8 +34,11 @@ fn refresh_file_list(state_rc: &Rc<RefCell<AppState>>) {
     spawn_local(async move {
         match crate::api::fetch_file_list().await {
             Ok(files) => {
-                crate::storage::generic::save("file-list", &files);
                 let mut st = state_clone.borrow_mut();
+                // Only save to cache if data changed
+                if st.file_list.files != files {
+                    crate::storage::generic::save("file-list", &files);
+                }
                 st.file_list.set_files(files);
                 // Don't overwrite status on success - let action messages show
             }
@@ -55,8 +58,11 @@ fn refresh_container_list(state_rc: &Rc<RefCell<AppState>>) {
     spawn_local(async move {
         match crate::api::fetch_container_list().await {
             Ok(containers) => {
-                crate::storage::generic::save("container-list", &containers);
                 let mut st = state_clone.borrow_mut();
+                // Only save to cache if data changed (important for background refresh!)
+                if st.container_list.containers != containers {
+                    crate::storage::generic::save("container-list", &containers);
+                }
                 st.container_list.set_containers(containers);
                 // Don't overwrite status on success - let action messages show
             }
