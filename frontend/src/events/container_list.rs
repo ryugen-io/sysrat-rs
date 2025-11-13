@@ -8,9 +8,11 @@ pub fn handle_keys(state: &mut AppState, state_rc: &Rc<RefCell<AppState>>, key_e
     match key_event.code {
         KeyCode::Char('j') | KeyCode::Down => {
             state.container_list.next();
+            refresh::save_selection(Pane::ContainerList, state);
         }
         KeyCode::Char('k') | KeyCode::Up => {
             state.container_list.previous();
+            refresh::save_selection(Pane::ContainerList, state);
         }
         KeyCode::Char('s') => {
             if let Some(container) = state.container_list._selected() {

@@ -1,4 +1,4 @@
-use super::{ContainerListState, EditorState, FileListState, MenuState, Pane, VimMode};
+use super::{ContainerListState, EditorState, FileListState, MenuState, Pane, VimMode, refresh};
 use crate::{keybinds::Keybinds, storage};
 
 pub struct AppState {
@@ -54,6 +54,9 @@ impl AppState {
         };
 
         storage::save_state(self.focus.as_str(), filename, content.as_deref());
+
+        // Also save current selection for lists
+        refresh::save_selection(self.focus, self);
     }
 
     pub fn set_status(&mut self, message: impl Into<String>) {

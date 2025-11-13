@@ -1,5 +1,5 @@
 use crate::api;
-use crate::state::{AppState, Pane, status_helper};
+use crate::state::{AppState, Pane, refresh, status_helper};
 use ratzilla::event::{KeyCode, KeyEvent};
 use std::{cell::RefCell, rc::Rc};
 use wasm_bindgen_futures::spawn_local;
@@ -12,9 +12,11 @@ pub fn handle_keys(state: &mut AppState, state_rc: &Rc<RefCell<AppState>>, key_e
         }
         KeyCode::Char('j') | KeyCode::Down => {
             state.file_list.next();
+            refresh::save_selection(Pane::FileList, state);
         }
         KeyCode::Char('k') | KeyCode::Up => {
             state.file_list.previous();
+            refresh::save_selection(Pane::FileList, state);
         }
         KeyCode::Enter => {
             if let Some(fileinfo) = state.file_list.selected().cloned() {
