@@ -1,6 +1,11 @@
 use axum::http::StatusCode;
 
-/// Validates a filename for security and allowed extensions
+/// Allowed file extensions for config files
+const ALLOWED_EXTENSIONS: &[&str] = &[
+    "conf", "toml", "txt", "sh", "fish", "rs", "json", "yaml", "yml", "ini", "env",
+];
+
+/// Validates a filename for security
 pub(super) fn validate_filename(filename: &str) -> Result<(), (StatusCode, String)> {
     // Security: No path traversal or Windows paths
     // Forward slashes (/) are allowed for directory-scanned files
@@ -8,20 +13,21 @@ pub(super) fn validate_filename(filename: &str) -> Result<(), (StatusCode, Strin
         return Err((StatusCode::BAD_REQUEST, "Invalid filename".into()));
     }
 
-    // Extract actual filename from path (handle directory-scanned files)
+    // Extract extension from filename (handle paths with slashes)
     let actual_filename = filename.rsplit('/').next().unwrap_or(filename);
 
-    // Only allow .conf and .toml files (check the actual filename, not the path)
-    if !actual_filename.ends_with(".conf")
-        && !actual_filename.ends_with(".toml")
-        && !actual_filename.ends_with(".rs")
-        && !actual_filename.ends_with(".txt")
-        && !actual_filename.ends_with(".sh")
-        && !actual_filename.ends_with(".fish")
-    {
+    // Check if extension is whitelisted
+    let has_valid_extension = ALLOWED_EXTENSIONS
+        .iter()
+        .any(|ext| actual_filename.ends_with(&format!(".{}", ext)));
+
+    if !has_valid_extension {
         return Err((
             StatusCode::BAD_REQUEST,
-            "Only .conf, .toml, .rs, .txt, .sh, .fish files allowed".into(),
+            format!(
+                "File extension not allowed. Allowed: {}",
+                ALLOWED_EXTENSIONS.join(", ")
+            ),
         ));
     }
 
