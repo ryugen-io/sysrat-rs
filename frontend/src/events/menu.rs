@@ -46,7 +46,10 @@ pub fn save_file(state: Rc<RefCell<AppState>>, filename: String, content: String
             }
             Err(e) => {
                 let mut st = state.borrow_mut();
-                st.set_status(format!("Error saving: {}", utils::error::format_error(&e)));
+                st.set_status(format!(
+                    "[ERROR saving: {}]",
+                    utils::error::format_error(&e)
+                ));
             }
         }
     });

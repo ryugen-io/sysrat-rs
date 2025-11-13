@@ -20,7 +20,7 @@ pub fn refresh_file_list(state_rc: &Rc<RefCell<AppState>>) {
                 crate::storage::generic::clear("file-list");
                 status_helper::set_status_timed(
                     &state_clone,
-                    format!("Error loading files: {}", utils::error::format_error(&e)),
+                    format!("[ERROR loading files: {}]", utils::error::format_error(&e)),
                 );
             }
         }

@@ -40,6 +40,10 @@ impl StatusLineTheme {
         Style::default().fg(Theme::SUCCESS)
     }
 
+    pub fn error_message_style() -> Style {
+        Style::default().fg(Theme::ERROR)
+    }
+
     pub fn help_text_style() -> Style {
         Style::default().fg(Theme::DIM)
     }

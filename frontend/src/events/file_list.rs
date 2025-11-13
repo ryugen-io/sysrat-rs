@@ -34,7 +34,7 @@ pub fn handle_keys(state: &mut AppState, state_rc: &Rc<RefCell<AppState>>, key_e
                         Err(e) => {
                             status_helper::set_status_timed(
                                 &state_clone,
-                                format!("Error loading: {}", utils::error::format_error(&e)),
+                                format!("[ERROR loading: {}]", utils::error::format_error(&e)),
                             );
                         }
                     }

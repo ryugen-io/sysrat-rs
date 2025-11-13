@@ -52,6 +52,7 @@ impl Theme {
     pub const GREEN: Color = rgb_from_env!("THEME_COLOR_GREEN");
     pub const YELLOW: Color = rgb_from_env!("THEME_COLOR_YELLOW");
     pub const PEACH: Color = rgb_from_env!("THEME_COLOR_PEACH");
+    pub const RED: Color = rgb_from_env!("THEME_COLOR_RED");
     pub const TEXT: Color = rgb_from_env!("THEME_COLOR_TEXT");
     pub const SUBTEXT0: Color = rgb_from_env!("THEME_COLOR_SUBTEXT0");
     pub const OVERLAY1: Color = rgb_from_env!("THEME_COLOR_OVERLAY1");
@@ -63,6 +64,7 @@ impl Theme {
     pub const SELECTED: Color = Self::YELLOW;
     pub const MODIFIED: Color = Self::PEACH;
     pub const SUCCESS: Color = Self::GREEN;
+    pub const ERROR: Color = Self::RED;
     pub const NORMAL_MODE: Color = Self::SAPPHIRE;
     pub const INSERT_MODE: Color = Self::MAUVE;
     pub const DIM: Color = Self::SUBTEXT0;

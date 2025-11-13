@@ -36,7 +36,12 @@ pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
         && let Some(ref msg) = state.status_message
     {
         spans.push(Span::raw(" | "));
-        spans.push(Span::styled(msg, StatusLineTheme::status_message_style()));
+        let style = if msg.starts_with("[ERROR") {
+            StatusLineTheme::error_message_style()
+        } else {
+            StatusLineTheme::status_message_style()
+        };
+        spans.push(Span::styled(msg, style));
     }
 
     let help_text = match (state.focus, state.vim_mode) {

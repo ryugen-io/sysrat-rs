@@ -55,7 +55,10 @@ pub fn main() -> Result<(), JsValue> {
                             storage::generic::clear("file-list");
                             state::status_helper::set_status_timed(
                                 &state_clone,
-                                format!("Error loading files: {}", utils::error::format_error(&e)),
+                                format!(
+                                    "[ERROR loading files: {}]",
+                                    utils::error::format_error(&e)
+                                ),
                             );
                         }
                     }

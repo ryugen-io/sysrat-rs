@@ -22,7 +22,7 @@ pub fn refresh_container_list(state_rc: &Rc<RefCell<AppState>>) {
                 status_helper::set_status_timed(
                     &state_clone,
                     format!(
-                        "Error loading containers: {}",
+                        "[ERROR loading containers: {}]",
                         utils::error::format_error(&e)
                     ),
                 );
