@@ -1,6 +1,7 @@
 use std::fs;
 
 pub fn extract_dependency_versions() {
+    // Frontend Cargo.toml
     let cargo_toml = fs::read_to_string("Cargo.toml").expect("Failed to read Cargo.toml");
 
     // Extract ratzilla version
@@ -14,8 +15,29 @@ pub fn extract_dependency_versions() {
         println!("cargo:rustc-env=RATATUI_VERSION=0.29");
     }
 
-    // Axum version from server
-    println!("cargo:rustc-env=AXUM_VERSION=0.7");
+    // Extract Rust edition from frontend Cargo.toml
+    if let Some(edition) = extract_edition(&cargo_toml) {
+        println!("cargo:rustc-env=RUST_EDITION={}", edition);
+    }
+
+    // Set Rust version (from rustc)
+    if let Ok(output) = std::process::Command::new("rustc")
+        .arg("--version")
+        .output()
+        && let Ok(version_str) = String::from_utf8(output.stdout)
+    {
+        // Extract version number from "rustc 1.82.0 (f6e511eec 2024-10-15)"
+        if let Some(version) = version_str.split_whitespace().nth(1) {
+            println!("cargo:rustc-env=RUST_VERSION={}", version);
+        }
+    }
+
+    // Axum version from server Cargo.toml
+    if let Ok(server_toml) = fs::read_to_string("../server/Cargo.toml")
+        && let Some(version) = find_dependency_version(&server_toml, "axum")
+    {
+        println!("cargo:rustc-env=AXUM_VERSION={}", version);
+    }
 }
 
 fn find_dependency_version(cargo_toml: &str, dependency_name: &str) -> Option<String> {
@@ -42,4 +64,19 @@ fn parse_version_from_line(line: &str) -> Option<String> {
         }
     }
     None
+}
+
+fn extract_edition(cargo_toml: &str) -> Option<String> {
+    cargo_toml
+        .lines()
+        .find(|line| line.contains("edition"))
+        .and_then(|line| {
+            if let Some(start) = line.find('"')
+                && let Some(end) = line[start + 1..].find('"')
+            {
+                Some(line[start + 1..start + 1 + end].to_string())
+            } else {
+                None
+            }
+        })
 }
