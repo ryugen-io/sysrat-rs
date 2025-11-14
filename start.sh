@@ -6,7 +6,7 @@ set -e
 readonly PID_FILE=".server.pid"
 readonly LOG_FILE="server.log"
 readonly SERVER_PORT=3000
-readonly SERVER_HOST="10.1.1.30"
+readonly SERVER_HOST="${SERVER_HOST:-localhost}"
 
 readonly RED='\033[0;31m'
 readonly GREEN='\033[0;32m'

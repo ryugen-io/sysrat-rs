@@ -9,7 +9,7 @@ set -o pipefail
 readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 readonly LOG_FILE="server.log"
 readonly SERVER_PORT=3000
-readonly SERVER_HOST="10.1.1.30"
+readonly SERVER_HOST="${SERVER_HOST:-localhost}"
 readonly PID_FILE=".server.pid"
 
 # Color codes for output
