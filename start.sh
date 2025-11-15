@@ -2,6 +2,7 @@
 # Start the Config Manager server without rebuilding
 
 set -e
+set -o pipefail
 
 # Configuration
 readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"

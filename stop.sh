@@ -2,6 +2,7 @@
 # Stop the Config Manager server
 
 set -e
+set -o pipefail
 
 readonly PID_FILE=".server.pid"
 readonly SERVER_PORT=3000
