@@ -89,7 +89,7 @@ analyze_files() {
     local yellow_threshold=$((limit * 80 / 100))  # 80% of limit
 
     local rs_files
-    rs_files=$(find "$SCRIPT_DIR" -name "*.rs" -not -path "*/target/*" | sort)
+    rs_files=$(find "$SCRIPT_DIR" -name "*.rs" -not -path "*/target/*")
 
     if [ -z "$rs_files" ]; then
         log_warn "No .rs files found"
@@ -107,10 +107,10 @@ analyze_files() {
     local min_file=""
     local over_limit=0
 
-    echo -e "${BLUE}${FILE}  File Analysis ${SUBTEXT}(limit: ${limit} lines):${NC}"
-    echo ""
+    # Temporary file to store file data for sorting
+    local temp_file=$(mktemp)
 
-    # Analyze each file
+    # First pass: collect all file data
     while IFS= read -r file; do
         if [ -f "$file" ]; then
             read -r code comments blank total <<< "$(count_lines "$file")"
@@ -133,25 +133,41 @@ analyze_files() {
                 min_file=$file
             fi
 
-            # Color code by size (green <80%, yellow 80%-100%, red >100%)
-            local color icon
+            # Count files over limit
             if [ $code -gt $limit ]; then
-                color=$RED
-                icon="${WARN}"
                 over_limit=$((over_limit + 1))
-            elif [ $code -gt $yellow_threshold ]; then
-                color=$YELLOW
-                icon="${WARN}"
-            else
-                color=$GREEN
-                icon=" "
             fi
 
-            # Display relative path for cleaner output
-            local rel_file="${file#./}"
-            printf "${color}${icon}  %4d lines${NC}  ${SUBTEXT}%s${NC}\n" "$code" "$rel_file"
+            # Store: code|file for sorting
+            echo "$code|$file" >> "$temp_file"
         fi
     done <<< "$rs_files"
+
+    echo -e "${BLUE}${FILE}  File Analysis ${SUBTEXT}(limit: ${limit} lines, sorted by LOC):${NC}"
+    echo ""
+
+    # Second pass: display sorted by line count (descending)
+    sort -t'|' -k1 -rn "$temp_file" | while IFS='|' read -r code file; do
+        # Color code by size (green <80%, yellow 80%-100%, red >100%)
+        local color icon
+        if [ $code -gt $limit ]; then
+            color=$RED
+            icon="${WARN}"
+        elif [ $code -gt $yellow_threshold ]; then
+            color=$YELLOW
+            icon="${WARN}"
+        else
+            color=$GREEN
+            icon=" "
+        fi
+
+        # Display relative path for cleaner output
+        local rel_file="${file#./}"
+        printf "${color}${icon}  %4d lines${NC}  ${SUBTEXT}%s${NC}\n" "$code" "$rel_file"
+    done
+
+    # Cleanup temp file
+    rm -f "$temp_file"
 
     # Calculate average
     local avg_code=0
