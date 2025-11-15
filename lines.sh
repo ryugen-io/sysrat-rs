@@ -166,7 +166,6 @@ analyze_files() {
 
     # Print summary
     echo ""
-    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "${GREEN}${CHART}  Summary:${NC}"
     echo ""
     printf "${TEXT}  Total files:     ${NC}%6d\n" "$file_count"
@@ -178,8 +177,6 @@ analyze_files() {
     printf "${TEXT}  Average/file:    ${NC}%6d ${SUBTEXT}lines${NC}\n" "$avg_code"
     printf "${SAPPHIRE}  Largest file:    ${NC}%6d ${SUBTEXT}lines${NC} ${YELLOW}(%s)${NC}\n" "$max_code" "${max_file#./}"
     printf "${GREEN}  Smallest file:   ${NC}%6d ${SUBTEXT}lines${NC} ${TEXT}(%s)${NC}\n" "$min_code" "${min_file#./}"
-    echo ""
-    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
 
     # Check if we have files over the limit
