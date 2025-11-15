@@ -1,0 +1,294 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [master, main, develop]
+  pull_request:
+    branches: [master, main, develop]
+  schedule:
+    # Run security scans daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  # Check if CI should be skipped
+  check-skip:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for .skip-ci file
+        id: skip_check
+        run: |
+          if [ -f .github/skips/.skip-ci ]; then
+            echo "should_skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_skip=false" >> $GITHUB_OUTPUT
+          fi
+
+  # Dependency scanning
+  dependency-review:
+    runs-on: ubuntu-latest
+    needs: check-skip
+    if: needs.check-skip.outputs.should_skip != 'true' && github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+
+  # Rust security audit
+  rust-security:
+    runs-on: ubuntu-latest
+    needs: check-skip
+    if: needs.check-skip.outputs.should_skip != 'true' && hashFiles('Cargo.toml') != ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust Security Audit
+        uses: rustsec/audit-check@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install cargo-deny
+        run: cargo install --locked cargo-deny
+
+      - name: Run cargo-deny
+        run: cargo deny check
+
+  # NPM/Node.js security audit
+  npm-security:
+    runs-on: ubuntu-latest
+    needs: check-skip
+    if: needs.check-skip.outputs.should_skip != 'true' && hashFiles('package.json') != ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+
+      - name: NPM Audit
+        run: npm audit --audit-level=moderate
+
+      - name: Check for vulnerabilities with snyk
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+  # Python security audit
+  python-security:
+    runs-on: ubuntu-latest
+    needs: check-skip
+    if: needs.check-skip.outputs.should_skip != 'true' && hashFiles('requirements.txt', 'Pipfile', 'pyproject.toml') != ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install safety
+        run: pip install safety
+
+      - name: Run safety check
+        run: safety check --json
+        continue-on-error: true
+
+      - name: Check for vulnerabilities with bandit
+        run: |
+          pip install bandit
+          bandit -r . -f json -o bandit-report.json
+        continue-on-error: true
+
+      - name: Upload bandit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: bandit-report.json
+
+  # CodeQL analysis
+  codeql:
+    runs-on: ubuntu-latest
+    needs: check-skip
+    if: needs.check-skip.outputs.should_skip != 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        language: []  # Auto-detect languages or specify: ['javascript', 'python', 'cpp', 'go', etc.]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          queries: security-extended,security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+
+  # CRITICAL: Secret scanning (ALWAYS runs, cannot be skipped)
+  # These jobs protect against accidental secret commits
+  git-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install git-secrets
+        run: |
+          git clone https://github.com/awslabs/git-secrets.git
+          cd git-secrets
+          sudo make install
+          cd ..
+          rm -rf git-secrets
+
+      - name: Configure git-secrets
+        run: |
+          git secrets --install
+          git secrets --register-aws
+          git secrets --add-provider -- cat .github/security/secrets-patterns.txt || true
+
+          # Add common secret patterns
+          git secrets --add '[Pp]assword\s*[:=]\s*["\047]?[^\s"'\'']{8,}'
+          git secrets --add '[Aa]pi[_-]?[Kk]ey\s*[:=]\s*["\047]?[^\s"'\'']{16,}'
+          git secrets --add '[Tt]oken\s*[:=]\s*["\047]?[^\s"'\'']{16,}'
+          git secrets --add 'AIza[0-9A-Za-z\-_]{35}'
+          git secrets --add 'AKIA[0-9A-Z]{16}'
+          git secrets --add 'ghp_[0-9a-zA-Z]{36}'
+          git secrets --add 'glpat-[0-9a-zA-Z\-_]{20}'
+          git secrets --add 'sk-[0-9a-zA-Z]{48}'
+          git secrets --add 'xox[baprs]-[0-9a-zA-Z\-]{10,48}'
+          git secrets --add '-----BEGIN\s+(RSA|DSA|EC|OPENSSH|PGP)\s+PRIVATE\s+KEY'
+
+      - name: Scan repository with git-secrets
+        run: git secrets --scan-history
+
+  detect-secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install detect-secrets
+        run: pip install detect-secrets
+
+      - name: Create baseline (if not exists)
+        run: |
+          if [ ! -f .secrets.baseline ]; then
+            detect-secrets scan --all-files \
+              --exclude-files '\.git/.*' \
+              --exclude-files '.*\.lock' \
+              --exclude-files 'package-lock\.json' \
+              --exclude-files 'yarn\.lock' \
+              --exclude-files 'Cargo\.lock' \
+              > .secrets.baseline
+          fi
+
+      - name: Scan for secrets
+        run: |
+          detect-secrets scan --baseline .secrets.baseline \
+            --all-files \
+            --exclude-files '\.git/.*' \
+            --exclude-files '.*\.lock' \
+            --exclude-files 'package-lock\.json' \
+            --exclude-files 'yarn\.lock' \
+            --exclude-files 'Cargo\.lock'
+
+      - name: Audit baseline
+        run: detect-secrets audit .secrets.baseline --report --fail-on-unaudited --fail-on-live
+
+  # Secret scanning with TruffleHog (ALWAYS runs)
+  trufflehog-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: TruffleHog Secret Scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified
+
+  # Container security scanning
+  container-scan:
+    runs-on: ubuntu-latest
+    needs: check-skip
+    if: needs.check-skip.outputs.should_skip != 'true' && hashFiles('Dockerfile') != ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t test-image:latest .
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'test-image:latest'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # License compliance check
+  license-check:
+    runs-on: ubuntu-latest
+    needs: check-skip
+    if: needs.check-skip.outputs.should_skip != 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Rust licenses
+        if: hashFiles('Cargo.toml') != ''
+        run: |
+          cargo install cargo-license
+          cargo license --json > licenses.json
+          cat licenses.json
+
+      - name: Check NPM licenses
+        if: hashFiles('package.json') != ''
+        run: |
+          npm install -g license-checker
+          license-checker --json > npm-licenses.json
+          cat npm-licenses.json
+
+      - name: Upload license reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-reports
+          path: |
+            licenses.json
+            npm-licenses.json

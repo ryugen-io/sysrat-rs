@@ -1,135 +1,324 @@
-name: CI
-#
-# CI Control: Use .skip-ci file to disable CI
-#
-# To DISABLE CI:
-#   touch .skip-ci && git add .skip-ci && git commit -m "Disable CI" && git push
-#
-# To ENABLE CI:
-#   git rm .skip-ci && git commit -m "Enable CI" && git push
-#
-# Note: .skip-ci is gitignored by default for local development use
-#
+name: Rust CI
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [master, main, develop]
     paths-ignore:
       - '**.md'
       - 'LICENSE*'
-      - '.gitignore'
+      - 'docs/**'
   pull_request:
-    branches: [ master, main ]
+    branches: [master, main, develop]
     paths-ignore:
       - '**.md'
       - 'LICENSE*'
-      - '.gitignore'
+      - 'docs/**'
 
 env:
   CARGO_TERM_COLOR: always
-  RUSTFLAGS: -D warnings
   RUST_BACKTRACE: 1
+  RUSTFLAGS: -D warnings
 
 jobs:
-  # Check if CI should be skipped based on .skip-ci file
+  # Check if CI should be skipped
   check-skip:
-    name: Check Skip CI
     runs-on: ubuntu-latest
     outputs:
-      should_skip: ${{ steps.check.outputs.skip }}
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+      has_rust_changes: ${{ steps.filter.outputs.rust }}
+      skip_fmt: ${{ steps.skip_check.outputs.skip_fmt }}
+      skip_clippy: ${{ steps.skip_check.outputs.skip_clippy }}
+      skip_build: ${{ steps.skip_check.outputs.skip_build }}
+      skip_test: ${{ steps.skip_check.outputs.skip_test }}
+      skip_bench: ${{ steps.skip_check.outputs.skip_bench }}
+      skip_audit: ${{ steps.skip_check.outputs.skip_audit }}
+      skip_deny: ${{ steps.skip_check.outputs.skip_deny }}
     steps:
       - uses: actions/checkout@v4
-      - name: Check if CI should be skipped
-        id: check
+
+      - name: Check for .skip-ci file
+        id: skip_check
         run: |
-          if [ -f .skip-ci ]; then
-            echo "⏭️ Found .skip-ci file - skipping all CI jobs"
-            echo "skip=true" >> $GITHUB_OUTPUT
+          # Global skip - skips all CI
+          if [ -f .github/skips/.skip-ci ]; then
+            echo "should_skip=true" >> $GITHUB_OUTPUT
           else
-            echo "✅ No .skip-ci file - running CI normally"
-            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "should_skip=false" >> $GITHUB_OUTPUT
           fi
 
+          # Individual job skip flags
+          if [ -f .github/skips/.skip-fmt ] || [ -f .github/skips/.skip-format ]; then
+            echo "skip_fmt=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip_fmt=false" >> $GITHUB_OUTPUT
+          fi
+
+          if [ -f .github/skips/.skip-clippy ] || [ -f .github/skips/.skip-lint ]; then
+            echo "skip_clippy=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip_clippy=false" >> $GITHUB_OUTPUT
+          fi
+
+          if [ -f .github/skips/.skip-build ]; then
+            echo "skip_build=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip_build=false" >> $GITHUB_OUTPUT
+          fi
+
+          if [ -f .github/skips/.skip-test ] || [ -f .github/skips/.skip-tests ]; then
+            echo "skip_test=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip_test=false" >> $GITHUB_OUTPUT
+          fi
+
+          if [ -f .github/skips/.skip-bench ] || [ -f .github/skips/.skip-benchmark ]; then
+            echo "skip_bench=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip_bench=false" >> $GITHUB_OUTPUT
+          fi
+
+          if [ -f .github/skips/.skip-audit ] || [ -f .github/skips/.skip-security ]; then
+            echo "skip_audit=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip_audit=false" >> $GITHUB_OUTPUT
+          fi
+
+          if [ -f .github/skips/.skip-deny ]; then
+            echo "skip_deny=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip_deny=false" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            rust:
+              - '**/*.rs'
+              - '**/Cargo.toml'
+              - '**/Cargo.lock'
+
+  # Format check and auto-fix
   fmt:
+    runs-on: ubuntu-latest
     needs: check-skip
-    if: needs.check-skip.outputs.should_skip != 'true'
-    name: Rustfmt
-    runs-on: ubuntu-latest
+    if: needs.check-skip.outputs.should_skip != 'true' && needs.check-skip.outputs.skip_fmt != 'true' && needs.check-skip.outputs.has_rust_changes == 'true'
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt
-      - name: Format backend
-        run: cargo fmt --all -- --check
-      - name: Format frontend
-        run: cd frontend && cargo fmt --all -- --check
-
-  clippy:
-    needs: check-skip
-    if: needs.check-skip.outputs.should_skip != 'true'
-    name: Clippy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
-      - uses: Swatinem/rust-cache@v2
-      - name: Clippy backend
-        run: cargo clippy --all-targets --all-features -- -D warnings
-      - name: Clippy frontend
-        run: cd frontend && cargo clippy --all-targets --all-features -- -D warnings
-
-  build:
-    needs: check-skip
-    if: needs.check-skip.outputs.should_skip != 'true'
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - name: Build backend
-        run: cargo build --all-features
-      - name: Install trunk for frontend
-        run: cargo install --locked trunk
-      - name: Build frontend (WASM)
-        run: cd frontend && trunk build
-
-  test:
-    needs: [check-skip, build]
-    if: needs.check-skip.outputs.should_skip != 'true'
-    name: Test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - name: Run backend tests
-        run: cargo test --all-features
-      - name: Run frontend tests
-        run: cd frontend && cargo test --all-features
-      - name: Run doc tests
-        run: cargo test --doc --all
-
-  audit:
-    needs: check-skip
-    if: needs.check-skip.outputs.should_skip != 'true'
-    name: Security Audit
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: rustsec/audit-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-  deny:
-    needs: check-skip
-    if: needs.check-skip.outputs.should_skip != 'true'
-    name: Cargo Deny
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Check backend formatting
+        run: cargo fmt --all -- --check
+        continue-on-error: true
+        id: fmt_check_backend
+
+      - name: Check frontend formatting
+        run: cd frontend && cargo fmt --all -- --check
+        continue-on-error: true
+        id: fmt_check_frontend
+
+      - name: Auto-format backend
+        if: steps.fmt_check_backend.outcome == 'failure'
+        run: cargo fmt --all
+
+      - name: Auto-format frontend
+        if: steps.fmt_check_frontend.outcome == 'failure'
+        run: cd frontend && cargo fmt --all
+
+      - name: Commit formatting changes
+        if: steps.fmt_check_backend.outcome == 'failure' || steps.fmt_check_frontend.outcome == 'failure'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add -A
+          git diff-index --quiet HEAD || git commit -m "chore: auto-format code with rustfmt"
+          git push
+
+  # Linting
+  clippy:
     runs-on: ubuntu-latest
+    needs: check-skip
+    if: needs.check-skip.outputs.should_skip != 'true' && needs.check-skip.outputs.skip_clippy != 'true' && needs.check-skip.outputs.has_rust_changes == 'true'
     steps:
       - uses: actions/checkout@v4
-      - run: cargo install --locked cargo-deny
-      - run: cargo deny check
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Run clippy on backend
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Run clippy on frontend
+        run: cd frontend && cargo clippy --all-targets --all-features -- -D warnings
+
+  # Build
+  build:
+    runs-on: ubuntu-latest
+    needs: check-skip
+    if: needs.check-skip.outputs.should_skip != 'true' && needs.check-skip.outputs.skip_build != 'true' && needs.check-skip.outputs.has_rust_changes == 'true'
+    strategy:
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-unknown-linux-musl
+          - aarch64-unknown-linux-gnu
+          - aarch64-unknown-linux-musl
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - name: Install cargo-auditable
+        run: cargo install cargo-auditable
+
+      - name: Install cross for non-native builds
+        if: matrix.target != 'x86_64-unknown-linux-gnu'
+        run: cargo install cross --git https://github.com/cross-rs/cross
+
+      - name: Build backend with cargo-auditable
+        run: |
+          if [ "${{ matrix.target }}" = "x86_64-unknown-linux-gnu" ]; then
+            cargo auditable build --release --target ${{ matrix.target }} --all-features
+          else
+            cross auditable build --release --target ${{ matrix.target }} --all-features
+          fi
+
+      - name: Install trunk for frontend (x86_64 only)
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        run: cargo install --locked trunk
+
+      - name: Add wasm32 target (x86_64 only)
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        run: rustup target add wasm32-unknown-unknown
+
+      - name: Build frontend WASM (x86_64 only)
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        run: cd frontend && trunk build --release
+
+      - name: Check for UPX compression flag
+        id: upx_check
+        run: |
+          TARGET="${{ matrix.target }}"
+          if [ -f .github/upx/.enable-upx ]; then
+            # Global enable for all architectures
+            echo "enabled=true" >> $GITHUB_OUTPUT
+          elif [[ "$TARGET" == x86_64* ]] && [ -f .github/upx/.enable-upx-x86_64 ]; then
+            # x86_64 specific
+            echo "enabled=true" >> $GITHUB_OUTPUT
+          elif [[ "$TARGET" == aarch64* ]] && [ -f .github/upx/.enable-upx-arm ]; then
+            # ARM64 specific
+            echo "enabled=true" >> $GITHUB_OUTPUT
+          else
+            echo "enabled=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install UPX
+        if: steps.upx_check.outputs.enabled == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y upx-ucl
+
+      - name: Compress binaries with UPX
+        if: steps.upx_check.outputs.enabled == 'true'
+        run: |
+          for binary in target/${{ matrix.target }}/release/*; do
+            if [ -f "$binary" ] && [ -x "$binary" ] && file "$binary" | grep -q "ELF.*executable"; then
+              echo "Compressing $binary with UPX..."
+              upx --best --lzma "$binary" || echo "Failed to compress $binary, skipping..."
+            fi
+          done
+
+      - name: Upload backend artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/config-manager-server
+
+      - name: Upload frontend artifacts (x86_64 only)
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-wasm
+          path: frontend/dist/
+
+  # Test
+  test:
+    runs-on: ubuntu-latest
+    needs: [check-skip, build]
+    if: needs.check-skip.outputs.should_skip != 'true' && needs.check-skip.outputs.skip_test != 'true' && needs.check-skip.outputs.has_rust_changes == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Run backend tests
+        run: cargo test --all-features --all
+
+      - name: Run frontend tests
+        run: cd frontend && cargo test --all-features
+
+      - name: Run doc tests
+        run: cargo test --doc --all-features
+
+  # Benchmark compilation check
+  bench:
+    runs-on: ubuntu-latest
+    needs: check-skip
+    if: needs.check-skip.outputs.should_skip != 'true' && needs.check-skip.outputs.skip_bench != 'true' && needs.check-skip.outputs.has_rust_changes == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Check benchmarks
+        run: cargo bench --no-run --all-features
+
+  # Security audit
+  audit:
+    runs-on: ubuntu-latest
+    needs: check-skip
+    if: needs.check-skip.outputs.should_skip != 'true' && needs.check-skip.outputs.skip_audit != 'true' && needs.check-skip.outputs.has_rust_changes == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: rustsec/audit-check@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  # Dependency policy check
+  deny:
+    runs-on: ubuntu-latest
+    needs: check-skip
+    if: needs.check-skip.outputs.should_skip != 'true' && needs.check-skip.outputs.skip_deny != 'true' && needs.check-skip.outputs.has_rust_changes == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@1.81
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install cargo-deny
+        run: cargo install --locked cargo-deny
+
+      - name: Run cargo-deny
+        run: cargo deny check

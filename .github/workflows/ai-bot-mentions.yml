@@ -1,0 +1,274 @@
+name: AI Bot Mentions
+
+# This workflow triggers when a bot is mentioned in issue comments or PR comments
+# It can be used to integrate with AI services like Claude, ChatGPT, or custom bots
+
+on:
+  issue_comment:
+    types: [created]
+  issues:
+    types: [opened, edited]
+  pull_request:
+    types: [opened, edited]
+  pull_request_review_comment:
+    types: [created]
+
+# Workflow-level permissions
+permissions:
+  issues: write
+  pull-requests: write
+  contents: read
+
+env:
+  # Configure your bot mention trigger
+  # Examples: "@ai-assistant", "@bot", "@claude", "@gpt"
+  BOT_MENTION: "@ai-bot"
+
+  # Enable debug logging (set to 'true' for verbose output)
+  DEBUG: "false"
+
+jobs:
+  # Check if CI should be skipped
+  check-skip:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+      skip_ai_bot: ${{ steps.skip_check.outputs.skip_ai_bot }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for skip flags
+        id: skip_check
+        run: |
+          # Global skip - skips all CI
+          if [ -f .github/skips/.skip-ci ]; then
+            echo "should_skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_skip=false" >> $GITHUB_OUTPUT
+          fi
+
+          # AI bot specific skip flag
+          if [ -f .github/skips/.skip-ai-bot ] || [ -f .github/skips/.skip-bot ]; then
+            echo "skip_ai_bot=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip_ai_bot=false" >> $GITHUB_OUTPUT
+          fi
+
+  # Job to detect and process bot mentions
+  detect-mention:
+    needs: check-skip
+    name: Detect Bot Mention
+    runs-on: ubuntu-latest
+
+    # Only run if not skipped and the comment/body contains the bot mention
+    if: |
+      needs.check-skip.outputs.should_skip != 'true' &&
+      needs.check-skip.outputs.skip_ai_bot != 'true' &&
+      (
+        (github.event.comment.body && contains(github.event.comment.body, '@ai-bot')) ||
+        (github.event.issue.body && contains(github.event.issue.body, '@ai-bot')) ||
+        (github.event.pull_request.body && contains(github.event.pull_request.body, '@ai-bot'))
+      )
+
+    outputs:
+      should_process: ${{ steps.check.outputs.should_process }}
+      comment_body: ${{ steps.extract.outputs.comment_body }}
+      issue_number: ${{ steps.extract.outputs.issue_number }}
+      is_pr: ${{ steps.extract.outputs.is_pr }}
+
+    steps:
+      - name: Check if bot mention exists
+        id: check
+        run: |
+          echo "Bot mention detected!"
+          echo "should_process=true" >> $GITHUB_OUTPUT
+
+      - name: Extract comment details
+        id: extract
+        run: |
+          # Determine the source of the mention
+          if [ "${{ github.event_name }}" = "issue_comment" ]; then
+            BODY="${{ github.event.comment.body }}"
+            ISSUE_NUM="${{ github.event.issue.number }}"
+            IS_PR="${{ github.event.issue.pull_request != null }}"
+          elif [ "${{ github.event_name }}" = "issues" ]; then
+            BODY="${{ github.event.issue.body }}"
+            ISSUE_NUM="${{ github.event.issue.number }}"
+            IS_PR="false"
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            BODY="${{ github.event.pull_request.body }}"
+            ISSUE_NUM="${{ github.event.pull_request.number }}"
+            IS_PR="true"
+          elif [ "${{ github.event_name }}" = "pull_request_review_comment" ]; then
+            BODY="${{ github.event.comment.body }}"
+            ISSUE_NUM="${{ github.event.pull_request.number }}"
+            IS_PR="true"
+          fi
+
+          # Output the extracted data
+          echo "comment_body<<EOF" >> $GITHUB_OUTPUT
+          echo "$BODY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          echo "issue_number=$ISSUE_NUM" >> $GITHUB_OUTPUT
+          echo "is_pr=$IS_PR" >> $GITHUB_OUTPUT
+
+          # Debug output
+          if [ "${{ env.DEBUG }}" = "true" ]; then
+            echo "Event: ${{ github.event_name }}"
+            echo "Issue/PR: $ISSUE_NUM"
+            echo "Is PR: $IS_PR"
+            echo "Body: $BODY"
+          fi
+
+  # Job to process the mention and respond
+  process-mention:
+    name: Process Bot Mention
+    needs: [check-skip, detect-mention]
+    runs-on: ubuntu-latest
+    if: |
+      needs.check-skip.outputs.should_skip != 'true' &&
+      needs.check-skip.outputs.skip_ai_bot != 'true' &&
+      needs.detect-mention.outputs.should_process == 'true'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Parse command from mention
+        id: parse
+        run: |
+          BODY="${{ needs.detect-mention.outputs.comment_body }}"
+
+          # Extract the command after the bot mention
+          # Example: "@ai-bot help" -> command="help"
+          # Example: "@ai-bot analyze this code" -> command="analyze this code"
+          COMMAND=$(echo "$BODY" | grep -oP '@ai-bot\s+\K.*' | head -n1 || echo "")
+
+          echo "command=$COMMAND" >> $GITHUB_OUTPUT
+
+          echo "Parsed command: $COMMAND"
+
+      - name: Acknowledge mention
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = ${{ needs.detect-mention.outputs.issue_number }};
+            const isPR = ${{ needs.detect-mention.outputs.is_pr }};
+
+            // Post an acknowledgment comment
+            const comment = `👋 Hello! I detected your mention. Processing your request...\n\n` +
+                          `**Command:** \`${{ steps.parse.outputs.command }}\`\n\n` +
+                          `_This is an automated response. Configure your AI integration to process this request._`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: comment
+            });
+
+      # ===================================================================
+      # INTEGRATION POINT: Add your AI service integration here
+      # ===================================================================
+      #
+      # Examples of what you can do:
+      # 1. Call Claude API (Anthropic)
+      # 2. Call OpenAI API (ChatGPT)
+      # 3. Call a custom webhook/API endpoint
+      # 4. Trigger another workflow
+      # 5. Run code analysis tools
+      # 6. Generate responses based on repository context
+      #
+      # You'll typically want to:
+      # - Use secrets for API keys (e.g., secrets.ANTHROPIC_API_KEY)
+      # - Pass the command and context to your AI service
+      # - Post the AI's response back as a comment
+      # ===================================================================
+
+      - name: Call AI Service (Example - Configure This!)
+        id: ai_service
+        env:
+          # Add your API keys as repository secrets
+          # Example: ANTHROPIC_API_KEY, OPENAI_API_KEY, etc.
+          # API_KEY: ${{ secrets.YOUR_API_KEY }}
+          COMMAND: ${{ steps.parse.outputs.command }}
+          ISSUE_NUMBER: ${{ needs.detect-mention.outputs.issue_number }}
+          IS_PR: ${{ needs.detect-mention.outputs.is_pr }}
+        run: |
+          # Example placeholder for AI service call
+          # Replace this with actual API call to your AI service
+
+          echo "🤖 AI Service Integration Point"
+          echo "================================"
+          echo "Command: $COMMAND"
+          echo "Issue/PR: $ISSUE_NUMBER"
+          echo "Is PR: $IS_PR"
+          echo ""
+          echo "Configure this step to call your AI service!"
+          echo "Examples:"
+          echo "  - Claude API: https://docs.anthropic.com/claude/reference"
+          echo "  - OpenAI API: https://platform.openai.com/docs/api-reference"
+          echo "  - Custom endpoint: curl -X POST your-api-endpoint"
+
+          # Example response (replace with actual AI response)
+          RESPONSE="I'm a template bot! Configure the AI service integration to enable real responses. Available commands: help, analyze, review, explain, suggest"
+
+          # Save response for next step
+          echo "response<<EOF" >> $GITHUB_OUTPUT
+          echo "$RESPONSE" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Post AI response
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = ${{ needs.detect-mention.outputs.issue_number }};
+            const response = `${{ steps.ai_service.outputs.response }}`;
+
+            // Post the AI's response as a comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: response
+            });
+
+      - name: Add reaction to original comment
+        if: github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const commentId = ${{ github.event.comment.id }};
+
+            // Add a thumbs up reaction to show the bot processed the mention
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: commentId,
+              content: '+1'
+            });
+
+  # Optional: Job to handle errors
+  handle-error:
+    name: Handle Errors
+    needs: [check-skip, detect-mention, process-mention]
+    runs-on: ubuntu-latest
+    if: failure()
+
+    steps:
+      - name: Post error message
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = ${{ needs.detect-mention.outputs.issue_number }};
+
+            const errorComment = `❌ Sorry, I encountered an error while processing your request.\n\n` +
+                                `Please check the [workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId}) for details.`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: errorComment
+            });
