@@ -57,14 +57,17 @@ git push
    - `detect-secrets`
    - `trufflehog-scan`
 
-2. **Local Development**: Skip files are gitignored by default for local use. You can create them locally without affecting the repository.
-
-3. **CI-Only Skips**: To skip CI only in the repository (not locally), commit the skip files to git.
+2. **Skip Files Must Be Committed**: To skip CI on GitHub Actions, you MUST commit the skip files to the repository. They are NOT gitignored.
 
 ## Best Practices
 
 - Use global `.skip-ci` sparingly - only for emergencies or major repository changes
 - Prefer individual job skips when you know specific jobs will fail
+- **Always commit skip files** - they must be in the repository to work on GitHub Actions
 - Always document why you're skipping CI in your commit message
 - Remove skip files as soon as the issue is resolved
 - Never skip security scans unless absolutely necessary and you understand the risks
+
+## Note
+
+Skip files are **NOT gitignored** and will be tracked in the repository when committed. This is intentional - CI runs on GitHub Actions and needs to see these files.
