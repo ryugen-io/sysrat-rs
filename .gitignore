@@ -82,3 +82,6 @@ Thumbs.db
 .server.pid
 *.pid
 *.sock
+
+# Test artifacts
+test-scripts.sh
