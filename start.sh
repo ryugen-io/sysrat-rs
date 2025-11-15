@@ -18,13 +18,18 @@ readonly LOG_FILE="server.log"
 readonly SERVER_PORT=3000
 readonly SERVER_HOST="${SERVER_HOST:-localhost}"
 
-readonly RED='\033[0;31m'
-readonly GREEN='\033[0;32m'
-readonly YELLOW='\033[1;33m'
-readonly NC='\033[0m'
+# Catppuccin Mocha color palette (24-bit true color)
+readonly RED='\033[38;2;243;139;168m'        # #f38ba8 - Errors
+readonly GREEN='\033[38;2;166;227;161m'      # #a6e3a1 - Success/Info
+readonly YELLOW='\033[38;2;249;226;175m'     # #f9e2af - Warnings
+readonly BLUE='\033[38;2;137;180;250m'       # #89b4fa - Info highlights
+readonly MAUVE='\033[38;2;203;166;247m'      # #cba6f7 - Headers
+readonly SAPPHIRE='\033[38;2;116;199;236m'   # #74c7ec - Success highlights
+readonly TEXT='\033[38;2;205;214;244m'       # #cdd6f4 - Normal text
+readonly NC='\033[0m'                         # No Color
 
 log_info() {
-    echo -e "${GREEN}  ${NC}$1"
+    echo -e "${BLUE}  ${NC}$1"
 }
 
 log_warn() {
@@ -36,7 +41,7 @@ log_error() {
 }
 
 log_success() {
-    echo -e "${GREEN}  ${NC}$1"
+    echo -e "${SAPPHIRE}  ${NC}$1"
 }
 
 # Check if port is already in use
@@ -93,7 +98,7 @@ if [ ! -f "config-manager.toml" ]; then
     exit 1
 fi
 
-log_info "Starting Config Manager server..."
+echo -e "${MAUVE}[start]${NC} Starting server..."
 
 # Remove old log file
 rm -f "$LOG_FILE"
@@ -122,10 +127,11 @@ max_attempts=5
 attempt=0
 while [ $attempt -lt $max_attempts ]; do
     if check_port; then
-        log_info "Server started successfully (PID: $SERVER_PID)"
-        log_info "Access at http://${SERVER_HOST}:${SERVER_PORT}"
-        log_info "Server logs: tail -f $LOG_FILE"
-        log_info "Stop server: ./stop.sh or kill $SERVER_PID"
+        echo ""
+        echo -e "${GREEN}[start]${NC} Server running (PID: $SERVER_PID)"
+        log_info "URL: http://${SERVER_HOST}:${SERVER_PORT}"
+        log_info "Logs: tail -f $LOG_FILE"
+        log_info "Stop: ./stop.sh"
         exit 0
     fi
     attempt=$((attempt + 1))

@@ -19,11 +19,15 @@ readonly SERVER_PORT=3000
 readonly SERVER_HOST="${SERVER_HOST:-localhost}"
 readonly PID_FILE=".server.pid"
 
-# Color codes for output
-readonly RED='\033[0;31m'
-readonly GREEN='\033[0;32m'
-readonly YELLOW='\033[1;33m'
-readonly NC='\033[0m' # No Color
+# Catppuccin Mocha color palette (24-bit true color)
+readonly RED='\033[38;2;243;139;168m'        # #f38ba8 - Errors
+readonly GREEN='\033[38;2;166;227;161m'      # #a6e3a1 - Success/Info
+readonly YELLOW='\033[38;2;249;226;175m'     # #f9e2af - Warnings
+readonly BLUE='\033[38;2;137;180;250m'       # #89b4fa - Info highlights
+readonly MAUVE='\033[38;2;203;166;247m'      # #cba6f7 - Headers
+readonly SAPPHIRE='\033[38;2;116;199;236m'   # #74c7ec - Success highlights
+readonly TEXT='\033[38;2;205;214;244m'       # #cdd6f4 - Normal text
+readonly NC='\033[0m'                         # No Color
 
 # Parse arguments
 BUILD_BACKEND=true
@@ -69,7 +73,7 @@ done
 
 # Logging functions
 log_info() {
-    echo -e "${GREEN}  ${NC}$1"
+    echo -e "${BLUE}  ${NC}$1"
 }
 
 log_warn() {
@@ -81,7 +85,7 @@ log_error() {
 }
 
 log_success() {
-    echo -e "${GREEN}  ${NC}$1"
+    echo -e "${SAPPHIRE}  ${NC}$1"
 }
 
 # Cleanup function
@@ -199,7 +203,7 @@ check_config() {
 
 # Build backend
 build_backend() {
-    log_info "Building backend..."
+    echo -e "${BLUE}[rebuild]${NC} Building backend..."
 
     if [ "$SKIP_FORMAT" = false ]; then
         log_info "Formatting backend code..."
@@ -221,12 +225,12 @@ build_backend() {
         exit 1
     }
 
-    log_info "Backend build successful"
+    echo -e "${GREEN}[rebuild]${NC} Backend build successful"
 }
 
 # Build frontend
 build_frontend() {
-    log_info "Building frontend..."
+    echo -e "${BLUE}[rebuild]${NC} Building frontend..."
 
     cd "$SCRIPT_DIR/frontend" || {
         log_error "Frontend directory not found"
@@ -254,12 +258,12 @@ build_frontend() {
     }
 
     cd "$SCRIPT_DIR"
-    log_info "Frontend build successful"
+    echo -e "${GREEN}[rebuild]${NC} Frontend build successful"
 }
 
 # Start server
 start_server() {
-    log_info "Starting server..."
+    echo -e "${MAUVE}[rebuild]${NC} Starting server..."
 
     # Remove old log file
     rm -f "$LOG_FILE"
@@ -288,11 +292,11 @@ start_server() {
     local attempt=0
     while [ $attempt -lt $max_attempts ]; do
         if check_port; then
-            log_info "Server started successfully (PID: $server_pid)"
-            log_info "Access at http://${SERVER_HOST}:${SERVER_PORT}"
-            log_info "Server logs: tail -f $LOG_FILE"
-            log_info "Stop server: kill $server_pid"
-            log_info "Refresh your browser to see changes"
+            echo ""
+            echo -e "${GREEN}[rebuild]${NC} Server running (PID: $server_pid)"
+            log_info "URL: http://${SERVER_HOST}:${SERVER_PORT}"
+            log_info "Logs: tail -f $LOG_FILE"
+            log_info "Stop: ./stop.sh"
             return 0
         fi
         attempt=$((attempt + 1))
@@ -307,7 +311,7 @@ start_server() {
 main() {
     cd "$SCRIPT_DIR"
 
-    log_info "Rebuilding Config Manager..."
+    echo -e "${MAUVE}[rebuild]${NC} Starting build process..."
     echo ""
 
     check_requirements
@@ -326,13 +330,13 @@ main() {
         echo ""
     fi
 
-    log_info "Build complete!"
+    echo -e "${GREEN}[rebuild]${NC} Build complete"
     echo ""
 
     if [ "$START_SERVER" = true ]; then
         start_server
     else
-        log_info "Skipping server start (--no-server flag)"
+        echo -e "${BLUE}[rebuild]${NC} Skipping server start (--no-server flag)"
     fi
 }
 
