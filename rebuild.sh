@@ -29,6 +29,11 @@ readonly SAPPHIRE='\033[38;2;116;199;236m'   # #74c7ec - Success highlights
 readonly TEXT='\033[38;2;205;214;244m'       # #cdd6f4 - Normal text
 readonly NC='\033[0m'                         # No Color
 
+# Nerd Font Icons
+readonly INFO=""
+readonly WARN=""
+readonly CROSS=""
+readonly CHECK=""
 # Parse arguments
 BUILD_BACKEND=true
 BUILD_FRONTEND=true
@@ -73,19 +78,19 @@ done
 
 # Logging functions
 log_info() {
-    echo -e "${BLUE}  ${NC}$1"
+    echo -e "${BLUE}${INFO}  ${NC}$1"
 }
 
 log_warn() {
-    echo -e "${YELLOW}  ${NC}$1"
+    echo -e "${YELLOW}${WARN}  ${NC}$1"
 }
 
 log_error() {
-    echo -e "${RED}  ${NC}$1" >&2
+    echo -e "${RED}${CROSS}  ${NC}$1" >&2
 }
 
 log_success() {
-    echo -e "${SAPPHIRE}  ${NC}$1"
+    echo -e "${SAPPHIRE}${CHECK}  ${NC}$1"
 }
 
 # Cleanup function

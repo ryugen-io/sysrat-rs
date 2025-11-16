@@ -15,10 +15,9 @@ readonly SAPPHIRE='\033[38;2;116;199;236m'
 readonly NC='\033[0m'
 
 # Nerd Font Icons
-readonly CHECK=""
-readonly CROSS=""
-readonly WARN=""
-
+readonly CHECK=""
+readonly CROSS=""
+readonly WARN=""
 log_success() {
     echo -e "${GREEN}${CHECK}  ${NC}$1"
 }

@@ -16,18 +16,17 @@ readonly SUBTEXT='\033[38;2;186;194;222m'    # #bac2de - Subtext
 readonly NC='\033[0m'                         # No Color
 
 # Nerd Font Icons
-readonly CHECK=""
-readonly CROSS=""
-readonly WARN=""
-readonly INFO=""
+readonly CHECK=""
+readonly CROSS=""
+readonly WARN=""
+readonly INFO=""
 readonly SERVER="󰒋"
 readonly CHART="󰈙"
 readonly CLOCK="󰥔"
 readonly MEM="󰍛"
 readonly CPU="󰻠"
 readonly NET="󰈀"
-readonly LOG=""
-
+readonly LOG=""
 readonly PID_FILE=".server.pid"
 readonly LOG_FILE="server.log"
 readonly PORT="3000"
@@ -53,7 +52,7 @@ log_stat() {
     local label=$2
     local value=$3
     local color=$4
-    echo -e "${SUBTEXT}${icon}  ${label}:${NC} ${color}${value}${NC}"
+    printf "${SUBTEXT}%-2s  %-12s${NC} ${color}%s${NC}\n" "$icon" "$label:" "$value"
 }
 
 echo -e "${MAUVE}[status]${NC} Checking Config Manager server status..."
@@ -94,7 +93,7 @@ log_stat "$INFO" "Process ID" "$PID" "$SAPPHIRE"
 # Uptime
 if command -v ps > /dev/null 2>&1; then
     UPTIME=$(ps -p "$PID" -o etime= 2>/dev/null | xargs || echo "unknown")
-    log_stat "$CLOCK" "Uptime    " "$UPTIME" "$GREEN"
+    log_stat "$CLOCK" "Uptime" "$UPTIME" "$GREEN"
 fi
 
 # Memory usage
@@ -102,28 +101,28 @@ if command -v ps > /dev/null 2>&1; then
     MEM_KB=$(ps -p "$PID" -o rss= 2>/dev/null | xargs || echo "0")
     if [ "$MEM_KB" != "0" ]; then
         MEM_MB=$((MEM_KB / 1024))
-        log_stat "$MEM" "Memory    " "${MEM_MB} MB" "$YELLOW"
+        log_stat "$MEM" "Memory" "${MEM_MB} MB" "$YELLOW"
     fi
 fi
 
 # CPU usage
 if command -v ps > /dev/null 2>&1; then
     CPU_PERCENT=$(ps -p "$PID" -o %cpu= 2>/dev/null | xargs || echo "unknown")
-    log_stat "$CPU" "CPU Usage " "${CPU_PERCENT}%" "$BLUE"
+    log_stat "$CPU" "CPU Usage" "${CPU_PERCENT}%" "$BLUE"
 fi
 
 # Port status
 if command -v ss > /dev/null 2>&1; then
     if ss -tuln | grep -q ":$PORT "; then
-        log_stat "$NET" "Port $PORT " "LISTENING" "$GREEN"
+        log_stat "$NET" "Port $PORT" "LISTENING" "$GREEN"
     else
-        log_stat "$NET" "Port $PORT " "NOT LISTENING" "$RED"
+        log_stat "$NET" "Port $PORT" "NOT LISTENING" "$RED"
     fi
 elif command -v netstat > /dev/null 2>&1; then
     if netstat -tuln 2>/dev/null | grep -q ":$PORT "; then
-        log_stat "$NET" "Port $PORT " "LISTENING" "$GREEN"
+        log_stat "$NET" "Port $PORT" "LISTENING" "$GREEN"
     else
-        log_stat "$NET" "Port $PORT " "NOT LISTENING" "$RED"
+        log_stat "$NET" "Port $PORT" "NOT LISTENING" "$RED"
     fi
 fi
 

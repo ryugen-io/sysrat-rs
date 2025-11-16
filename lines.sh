@@ -22,9 +22,8 @@ readonly NC='\033[0m'                         # No Color
 
 # Nerd Font Icons
 readonly CHART="󰈙"
-readonly FILE=""
-readonly WARN=""
-
+readonly FILE=""
+readonly WARN=""
 # Logging functions
 log_info() {
     echo -e "${BLUE}  ${NC}$1"
