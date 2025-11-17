@@ -152,14 +152,14 @@ def get_description(filename: str) -> str:
 def generate_readme(files: dict, versions: dict, git_info: dict) -> str:
     """Generate README with file links organized by category."""
 
-    # Nerd Font Icons (exact same as theme.py Icons class)
-    ROCKET = '\uf135'
-    SERVER = '\uf233'
-    HAMMER = '\uf6e3'
-    FOLDER = '\uf07b'
-    FILE = '\uf15b'
-    CHART = '\uf200'
-    INFO = '\uf05a'
+    # Standard emojis (work in all browsers)
+    ROCKET = '🚀'
+    SERVER = '🖥️'
+    HAMMER = '🔨'
+    FOLDER = '📁'
+    FILE = '📄'
+    CHART = '📊'
+    INFO = 'ℹ️'
 
     readme = "# sysrat\n\n"
     readme += "**sysrat** is a full-stack web-based configuration management system written in Rust.\n\n"
@@ -182,6 +182,16 @@ def generate_readme(files: dict, versions: dict, git_info: dict) -> str:
     readme += f"- **Backend**: {SERVER} Axum v{axum}\n"
     readme += f"- **Frontend**: {CHART} Ratzilla v{ratzilla} (Ratatui-based WASM TUI)\n"
     readme += f"- **Build**: {HAMMER} Trunk (WASM bundler), Cargo (Rust toolchain)\n\n"
+
+    # Features section
+    readme += "## ✨ Features\n\n"
+    readme += "### Status Line System\n\n"
+    readme += "- 🎯 **Modular component system** with 13 component types\n"
+    readme += "- 🎨 **TOML-configurable** (built-in + XDG user override)\n"
+    readme += "- 📦 **Split components** (state.rs, build.rs, text.rs) - all under 90 LOC\n"
+    readme += "- 🎛️ **Per-pane configuration** (Menu shows only build info in 1 line)\n"
+    readme += "- 🏷️ **Themed build output** with `[statusline]` tag\n"
+    readme += "- ✅ **All checks passed** (clippy -D warnings, fmt, test, audit)\n\n"
 
     # Management Scripts
     if files['management_scripts']:

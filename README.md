@@ -2,38 +2,49 @@
 
 **sysrat** is a full-stack web-based configuration management system written in Rust.
 
-- **Backend**:  Rust + Axum (async web framework)
-- **Frontend**:  WASM + Ratzilla (terminal UI in the browser)
+- **Backend**: 🖥️ Rust + Axum (async web framework)
+- **Frontend**: 📊 WASM + Ratzilla (terminal UI in the browser)
 - **Features**: Configuration file management, Docker container management
 
- **Last Updated**: 2025-11-17 (`13a5a2b`)
+ℹ️ **Last Updated**: 2025-11-17 (`7b61d9c`)
 
-##  Tech Stack
+## 🔨 Tech Stack
 
 **Rust Edition 2024**
 
-- **Backend**:  Axum v0.7
-- **Frontend**:  Ratzilla v0.2 (Ratatui-based WASM TUI)
-- **Build**:  Trunk (WASM bundler), Cargo (Rust toolchain)
+- **Backend**: 🖥️ Axum v0.7
+- **Frontend**: 📊 Ratzilla v0.2 (Ratatui-based WASM TUI)
+- **Build**: 🔨 Trunk (WASM bundler), Cargo (Rust toolchain)
 
-##  Management Scripts
+## ✨ Features
 
--  [rebuild.py](rebuild.py) - Build and deploy (backend + frontend)
--  [start.py](start.py) - Start the sysrat server
--  [status.py](status.py) - Check server status and stats
--  [stop.py](stop.py) - Stop the sysrat server
+### Status Line System
 
-##  Configuration
+- 🎯 **Modular component system** with 13 component types
+- 🎨 **TOML-configurable** (built-in + XDG user override)
+- 📦 **Split components** (state.rs, build.rs, text.rs) - all under 90 LOC
+- 🎛️ **Per-pane configuration** (Menu shows only build info in 1 line)
+- 🏷️ **Themed build output** with `[statusline]` tag
+- ✅ **All checks passed** (clippy -D warnings, fmt, test, audit)
 
--  [CLAUDE.md](CLAUDE.md) - Developer documentation and AI assistant guide
--  [justfile](justfile) - Task runner commands
--  [sys/env/.env.example](sys/env/.env.example) - Environment configuration template
--  [sysrat.toml](sysrat.toml) - Application configuration
+## 🚀 Management Scripts
 
-##  Project Structure
+- 📄 [rebuild.py](rebuild.py) - Build and deploy (backend + frontend)
+- 📄 [start.py](start.py) - Start the sysrat server
+- 📄 [status.py](status.py) - Check server status and stats
+- 📄 [stop.py](stop.py) - Stop the sysrat server
 
--  `frontend/` - WASM-based TUI frontend (Ratzilla)
--  `server/` - Backend API server (Rust + Axum)
+## 📄 Configuration
+
+- 📄 [CLAUDE.md](CLAUDE.md) - Developer documentation and AI assistant guide
+- 📄 [justfile](justfile) - Task runner commands
+- 📄 [sys/env/.env.example](sys/env/.env.example) - Environment configuration template
+- 📄 [sysrat.toml](sysrat.toml) - Application configuration
+
+## 📁 Project Structure
+
+- 📁 `frontend/` - WASM-based TUI frontend (Ratzilla)
+- 📁 `server/` - Backend API server (Rust + Axum)
 
 ## Quick Start
 
