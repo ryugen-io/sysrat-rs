@@ -1,12 +1,12 @@
-# SysRat
+# sysrat
 
-**SysRat** is a full-stack web-based configuration management system written in Rust.
+**sysrat** is a full-stack web-based configuration management system written in Rust.
 
 - **Backend**:  Rust + Axum (async web framework)
 - **Frontend**:  WASM + Ratzilla (terminal UI in the browser)
 - **Features**: Configuration file management, Docker container management
 
- **Last Updated**: 2025-11-17 (`3c31de1`)
+ **Last Updated**: 2025-11-17 (`bc7e6de`)
 
 ##  Tech Stack
 
@@ -19,9 +19,9 @@
 ##  Management Scripts
 
 -  [rebuild.py](rebuild.py) - Build and deploy (backend + frontend)
--  [start.py](start.py) - Start the SysRat server
+-  [start.py](start.py) - Start the sysrat server
 -  [status.py](status.py) - Check server status and stats
--  [stop.py](stop.py) - Stop the SysRat server
+-  [stop.py](stop.py) - Stop the sysrat server
 
 ##  Configuration
 

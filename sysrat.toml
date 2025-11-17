@@ -1,4 +1,4 @@
-# SysRat - Meta Configuration
+# sysrat - Meta Configuration
 # Define which system files to manage
 
 # Global settings
@@ -13,11 +13,11 @@ allowed_extensions = ["toml"]
 # - readonly: Optional, if true the file cannot be edited
 # - theme: Optional, specify a custom theme variant for this file (e.g., "mocha", "latte")
 
-# SysRat -> sysrat.toml
+# sysrat -> sysrat.toml
 [[files]]
 path = "/data/code/devel/git.repos/sysrat-rs/sysrat.toml"
 name = "sysrat.toml"
-description = "SysRat Main config File"
+description = "sysrat Main config File"
 
 # Directory scanning example
 # Scans a directory recursively and includes files matching specific types
@@ -26,6 +26,6 @@ path = "/data/code/devel/git.repos/sysrat-rs"
 name = "sysrat"
 depth = 3
 types = ["toml"]
-description = "SysRat Main Dir"
+description = "sysrat Main Dir"
 
 # You can add more files and directories here!

@@ -1,6 +1,6 @@
-# CLAUDE.md - AI Assistant Guide for SysRat
+# CLAUDE.md - AI Assistant Guide for sysrat
 
-This document provides comprehensive guidance for AI assistants working on the SysRat codebase. It covers architecture, development workflows, conventions, and best practices.
+This document provides comprehensive guidance for AI assistants working on the sysrat codebase. It covers architecture, development workflows, conventions, and best practices.
 
 **Last Updated:** 2025-11-17
 **Version:** 0.2.0
@@ -24,7 +24,7 @@ This document provides comprehensive guidance for AI assistants working on the S
 
 ## Project Overview
 
-**SysRat** is a full-stack web-based configuration management system written in Rust. It provides:
+**sysrat** is a full-stack web-based configuration management system written in Rust. It provides:
 
 - **Configuration File Management**: Browse, edit, and save system configuration files (nginx, Docker, SSH, etc.)
 - **Docker Container Management**: List, inspect, start, stop, and restart containers
@@ -69,7 +69,7 @@ This document provides comprehensive guidance for AI assistants working on the S
 │  │  ├─ /api/configs (file mgmt)        ││
 │  │  └─ /api/containers (Docker)        ││
 │  ├─────────────────────────────────────┤│
-│  │  SysRat                     ││
+│  │  sysrat                     ││
 │  │  ├─ File loading & validation       ││
 │  │  ├─ Directory scanning              ││
 │  │  └─ Extension whitelisting          ││
@@ -625,7 +625,7 @@ Build scripts load configuration from `sys/env/.env`:
 SERVER_HOST=10.1.1.30     # Display host in status messages
 SERVER_PORT=3000          # Server port
 SERVER_BINARY=sysrat
-DISPLAY_NAME=SysRat
+DISPLAY_NAME=sysrat
 
 # Build Configuration
 RUST_TOOLCHAIN=stable

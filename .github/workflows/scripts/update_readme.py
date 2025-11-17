@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-README Generator for SysRat - Lists user-facing files and directories
+README Generator for sysrat - Lists user-facing files and directories
 """
 
 import sys
@@ -130,8 +130,8 @@ def get_description(filename: str) -> str:
     """Get description for a file."""
     descriptions = {
         # Management scripts
-        'start.py': 'Start the SysRat server',
-        'stop.py': 'Stop the SysRat server',
+        'start.py': 'Start the sysrat server',
+        'stop.py': 'Stop the sysrat server',
         'status.py': 'Check server status and stats',
         'rebuild.py': 'Build and deploy (backend + frontend)',
 
@@ -161,8 +161,8 @@ def generate_readme(files: dict, versions: dict, git_info: dict) -> str:
     CHART = '\uf200'
     INFO = '\uf05a'
 
-    readme = "# SysRat\n\n"
-    readme += "**SysRat** is a full-stack web-based configuration management system written in Rust.\n\n"
+    readme = "# sysrat\n\n"
+    readme += "**sysrat** is a full-stack web-based configuration management system written in Rust.\n\n"
     readme += f"- **Backend**: {SERVER} Rust + Axum (async web framework)\n"
     readme += f"- **Frontend**: {CHART} WASM + Ratzilla (terminal UI in the browser)\n"
     readme += "- **Features**: Configuration file management, Docker container management\n\n"

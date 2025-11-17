@@ -1,6 +1,6 @@
 /// # Theme Design Pattern
 ///
-/// This module defines the standardized theme system for the SysRat TUI.
+/// This module defines the standardized theme system for the sysrat TUI.
 ///
 /// ## Architecture
 ///

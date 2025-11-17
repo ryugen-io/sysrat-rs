@@ -34,7 +34,7 @@ def load_env_config(repo_root: Path) -> dict:
         'GITHUB_DIR': '.github',
         'SCRIPT_DIRS': 'rust',
         'SERVER_BINARY': 'sysrat',
-        'DISPLAY_NAME': 'SysRat',
+        'DISPLAY_NAME': 'sysrat',
         'SERVER_HOST': '10.1.1.30',
         'SERVER_PORT': '3000',
         'PID_FILE': '.server.pid',

@@ -26,7 +26,7 @@ def load_env_config(repo_root: Path) -> dict:
         'GITHUB_DIR': '.github',
         'SCRIPT_DIRS': 'rust',
         'SERVER_BINARY': 'sysrat',
-        'DISPLAY_NAME': 'SysRat',
+        'DISPLAY_NAME': 'sysrat',
         'PID_FILE': '.server.pid',
         'LOG_FILE': 'server.log'
     }
