@@ -6,7 +6,7 @@
 - **Frontend**: 󰈙 WASM + Ratzilla (terminal UI in the browser)
 - **Features**: Configuration file management, Docker container management
 
-[build]   **Last Updated**: 2025-11-17 (`67e41c3`)
+[build]   **Last Updated**: 2025-11-17 (`100da7e`)
 
 ##  Tech Stack
 
