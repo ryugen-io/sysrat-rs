@@ -11,10 +11,12 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR
 sys.path.insert(0, str(REPO_ROOT / 'sys' / 'theme'))
+sys.path.insert(0, str(REPO_ROOT / 'sys' / 'utils'))
 
 from theme import (  # noqa: E402
     Colors, Icons, log_success, log_error, log_warn, log_info
 )
+from xdg_paths import get_log_file, get_pid_file  # noqa: E402
 
 
 def load_env_config(repo_root: Path) -> dict:
@@ -84,10 +86,19 @@ def main():
     config = load_env_config(REPO_ROOT)
     server_binary = config['SERVER_BINARY']
     display_name = config['DISPLAY_NAME']
-    pid_file = REPO_ROOT / config['PID_FILE']
-    log_file = REPO_ROOT / config['LOG_FILE']
+    app_name = 'sysrat'
     port = config['SERVER_PORT']
     host = config['SERVER_HOST']
+
+    # Get XDG-compliant paths
+    pid_file = get_pid_file(app_name, config)
+    log_file = get_log_file(app_name, config)
+
+    # Handle relative paths from config
+    if not pid_file.is_absolute():
+        pid_file = REPO_ROOT / pid_file
+    if not log_file.is_absolute():
+        log_file = REPO_ROOT / log_file
 
     print()
     print(f"{Colors.MAUVE}[start]{Colors.NC} {Icons.ROCKET}  "

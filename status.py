@@ -12,10 +12,12 @@ from pathlib import Path
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR
 sys.path.insert(0, str(REPO_ROOT / 'sys' / 'theme'))
+sys.path.insert(0, str(REPO_ROOT / 'sys' / 'utils'))
 
 from theme import (  # noqa: E402
     Colors, Icons, log_success, log_error, log_info
 )
+from xdg_paths import get_log_file, get_pid_file  # noqa: E402
 
 
 def load_env_config(repo_root: Path) -> dict:
@@ -159,10 +161,19 @@ def show_server_status(config: dict) -> bool:
     """Show detailed server status"""
     display_name = config['DISPLAY_NAME']
     server_binary = config['SERVER_BINARY']
-    pid_file = REPO_ROOT / config['PID_FILE']
-    log_file = REPO_ROOT / config['LOG_FILE']
+    app_name = 'sysrat'
     port = config['SERVER_PORT']
     host = config['SERVER_HOST']
+
+    # Get XDG-compliant paths
+    pid_file = get_pid_file(app_name, config)
+    log_file = get_log_file(app_name, config)
+
+    # Handle relative paths from config
+    if not pid_file.is_absolute():
+        pid_file = REPO_ROOT / pid_file
+    if not log_file.is_absolute():
+        log_file = REPO_ROOT / log_file
 
     print(f"{Colors.MAUVE}{Icons.SERVER}  {display_name}{Colors.NC}")
     print()
@@ -244,7 +255,12 @@ def main():
     if show_server_status(config):
         log_success("Server is running")
         print()
-        log_info(f"Logs: {Colors.BLUE}tail -f {config['LOG_FILE']}{Colors.NC}")
+        # Get log file path for display
+        app_name = 'sysrat'
+        log_file = get_log_file(app_name, config)
+        if not log_file.is_absolute():
+            log_file = REPO_ROOT / log_file
+        log_info(f"Logs: {Colors.BLUE}tail -f {log_file}{Colors.NC}")
         log_info(f"Stop: {Colors.BLUE}./stop.py{Colors.NC}")
     else:
         log_error("Server is not running")
