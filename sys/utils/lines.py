@@ -103,7 +103,7 @@ def count_lines(filepath: Path) -> FileStats:
     return stats
 
 
-def scan_files(base_path: Path, types: List[str], recursive: bool) -> List[Path]:
+def scan_files(base_path: Path, types: List[str], recursive: bool, exclude_dirs: List[str]) -> List[Path]:
     """Scan for files to analyze"""
     files = []
 
@@ -113,7 +113,17 @@ def scan_files(base_path: Path, types: List[str], recursive: bool) -> List[Path]
         for ext in types:
             ext = ext.lstrip('*.')
             pattern = f'**/*.{ext}' if recursive else f'*.{ext}'
-            files.extend(base_path.glob(pattern))
+            matched_files = base_path.glob(pattern)
+
+            # Filter out excluded directories
+            for filepath in matched_files:
+                should_exclude = False
+                for exclude_dir in exclude_dirs:
+                    if exclude_dir in filepath.parts:
+                        should_exclude = True
+                        break
+                if not should_exclude:
+                    files.append(filepath)
 
     return sorted(files)
 
@@ -127,17 +137,20 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''
 Examples:
-  # Count lines in all Python files
+  # Count lines in entire repository (recursive by default, excludes target/)
+  python3 lines.py
+
+  # Count lines in all Python files recursively
   python3 lines.py --types py
 
-  # Count lines in shell scripts with warning threshold
-  python3 lines.py --types sh --limit 200
+  # Count lines only in current directory (no recursion)
+  python3 lines.py --no-recursive
 
-  # Count lines recursively in project
-  python3 lines.py --path /path/to/project --types py js ts --recursive
+  # Count lines with custom exclusions
+  python3 lines.py --exclude target dist build
 
-  # Count lines in multiple file types
-  python3 lines.py --types rs py sh js --recursive
+  # Count lines in multiple file types with custom limit
+  python3 lines.py --types rs py sh js --limit 300
         '''
     )
 
@@ -158,7 +171,22 @@ Examples:
     parser.add_argument(
         '-r', '--recursive',
         action='store_true',
-        help='Search recursively in subdirectories'
+        default=True,
+        help='Search recursively in subdirectories (default: True)'
+    )
+
+    parser.add_argument(
+        '--no-recursive',
+        action='store_false',
+        dest='recursive',
+        help='Disable recursive search (only scan top-level directory)'
+    )
+
+    parser.add_argument(
+        '-e', '--exclude',
+        nargs='+',
+        default=['target', '.git', 'node_modules', 'dist', '__pycache__', '.venv', 'venv'],
+        help='Directories to exclude from scanning (default: target .git node_modules dist __pycache__ .venv venv)'
     )
 
     parser.add_argument(
@@ -177,7 +205,7 @@ Examples:
         return 1
 
     # Scan files
-    files = scan_files(base_path, args.types, args.recursive)
+    files = scan_files(base_path, args.types, args.recursive, args.exclude)
 
     if not files:
         log_error(f"No files found matching types: {', '.join(args.types)}")
