@@ -3,7 +3,7 @@
 This document provides comprehensive guidance for AI assistants working on the sysrat codebase. It covers architecture, development workflows, conventions, and best practices.
 
 **Last Updated:** 2025-11-17
-**Version:** 0.2.0
+**Version:** 0.3.0
 
 ---
 
@@ -110,8 +110,7 @@ Both share the `Cargo.lock` file but have separate `Cargo.toml` manifests.
 ├── status.py                   # Server status checker
 ├── sys/                       # System utilities
 │   ├── env/                    # Environment configuration
-│   │   ├── .env                # Build script configuration
-│   │   └── .env.example        # Environment template
+│   │   └── .env.example        # Environment template (create .env.dev for development)
 │   ├── rust/                   # Rust development scripts
 │   │   ├── audit.py            # Security audit
 │   │   ├── check.py            # Cargo check
@@ -119,7 +118,18 @@ Both share the `Cargo.lock` file but have separate `Cargo.toml` manifests.
 │   │   ├── clippy.py           # Linting
 │   │   ├── rustfmt.py          # Code formatting
 │   │   └── test_rust.py        # Run tests
-│   └── theme/                  # Theme system (Catppuccin Mocha)
+│   ├── utils/                  # General utility scripts
+│   │   ├── fix_nerdfonts.py    # Fix Nerd Font icons
+│   │   ├── lines.py            # Line counter with statistics
+│   │   ├── pyclean.py          # Clean Python cache files
+│   │   ├── pycompile.py        # Python syntax checker
+│   │   ├── pylint.py           # Python linting
+│   │   ├── remove_emojis.py    # Remove emojis from files
+│   │   ├── venv.py             # Virtual environment manager
+│   │   └── xdg_paths.py        # XDG Base Directory utilities
+│   └── theme/                  # Theme system (Catppuccin themes)
+│       ├── theme.py            # Python theme module
+│       └── theme.toml          # Theme configuration
 │
 ├── server/                     # Backend API server
 │   ├── Cargo.toml             # Server dependencies
@@ -148,7 +158,11 @@ Both share the `Cargo.lock` file but have separate `Cargo.toml` manifests.
 └── frontend/                   # WASM TUI frontend
     ├── Cargo.toml             # WASM dependencies
     ├── build.rs               # Build-time code generation
-    ├── theme.toml             # Catppuccin Mocha colors
+    ├── themes/                # Theme variants (Catppuccin)
+    │   ├── mocha.toml         # Dark theme (default)
+    │   ├── frappe.toml        # Dark theme (warm)
+    │   ├── latte.toml         # Light theme
+    │   └── macchiato.toml     # Dark theme (cool)
     ├── keybinds.toml          # Keybind configuration
     ├── index.html             # Entry HTML
     ├── build_helpers/         # Build-time utilities
@@ -207,7 +221,8 @@ Both share the `Cargo.lock` file but have separate `Cargo.toml` manifests.
 | **Frontend** | `frontend/src/lib.rs:1` | WASM entry point, initializes Ratzilla terminal |
 | **Config** | `sysrat.toml:1` | Application configuration (files, extensions) |
 | **Build** | `rebuild.py:1` | Full build orchestration script (Python) |
-| **Env Config** | `sys/env/.env:1` | Build script environment configuration |
+| **Env Config** | `sys/env/.env.example:1` | Build script environment configuration template |
+| **Themes** | `frontend/themes/*.toml:1` | UI theme variants (Catppuccin Mocha, Frappe, Latte, Macchiato) |
 
 ---
 
@@ -290,12 +305,16 @@ just build-frontend
 1. **Make changes** to source code
 2. **Run pre-commit checks** (MANDATORY before committing):
    ```bash
-   # Run ALL checks with --recursive to find all projects
+   # Quick option: Run all checks at once
+   just pre-commit
+
+   # Or run individually with --recursive to find all projects
    ./sys/rust/rustfmt.py --recursive       # Format Rust code
    ./sys/rust/clippy.py --recursive        # Lint Rust code
    ./sys/rust/check.py --recursive         # Check Rust builds
    ./sys/rust/test_rust.py --recursive     # Run Rust tests
    python3 sys/utils/pylint.py --recursive # Lint Python code
+   python3 sys/utils/pycompile.py --recursive # Python syntax check
    ```
 3. **Build and test**: `./rebuild.py` (builds and starts server)
 4. **Test manually** via the web interface
@@ -359,11 +378,51 @@ trunk build --release
 **Build Process**:
 1. `build.rs` runs at compile time:
    - Extracts dependency versions
-   - Reads `theme.toml` and injects colors as env vars
+   - Reads theme files from `themes/` directory and injects colors as env vars
    - Sets build date and git hash
 2. Trunk compiles Rust to WASM
 3. Outputs bundled assets to `dist/`
 4. Backend serves `dist/` at root path `/`
+
+### Additional Justfile Commands
+
+The project includes many utility commands for development workflows:
+
+```bash
+# Code quality
+just lines          # Count lines of code with statistics
+just loc            # Alias for 'lines'
+just pylint         # Python linting (flake8, pylint, mypy, black)
+just pycompile      # Python syntax checking
+just pyclean        # Clean Python cache files (__pycache__, .mypy_cache, etc.)
+
+# Utilities
+just fix-nerdfonts  # Fix Nerd Font icons in files
+just remove-emojis  # Remove emojis from files
+just venv           # Create/manage Python virtual environment
+just xdg-paths      # Show XDG Base Directory paths
+
+# Comprehensive checks
+just rust-checks    # Run all Rust checks (fmt, clippy, check, test)
+just python-checks  # Run all Python checks (pylint, pycompile)
+just all-checks     # Run all checks (Rust + Python)
+just pre-commit     # Complete pre-commit validation (all checks + audit)
+```
+
+### Python Utility Scripts Reference
+
+| Script | Purpose | Usage |
+|--------|---------|-------|
+| **lines.py** | Count lines of code with detailed statistics (code, comments, blank) | `python3 sys/utils/lines.py` or `just lines` |
+| **pylint.py** | Python linting with multiple tools (flake8, pylint, mypy, black) | `python3 sys/utils/pylint.py --recursive` or `just pylint` |
+| **pycompile.py** | Syntax check all Python files (compilation check) | `python3 sys/utils/pycompile.py --recursive` or `just pycompile` |
+| **pyclean.py** | Clean Python cache directories and bytecode files | `python3 sys/utils/pyclean.py --recursive` or `just pyclean` |
+| **fix_nerdfonts.py** | Fix Nerd Font icon format in text files | `python3 sys/utils/fix_nerdfonts.py` or `just fix-nerdfonts` |
+| **remove_emojis.py** | Remove emoji characters from text files | `python3 sys/utils/remove_emojis.py` or `just remove-emojis` |
+| **venv.py** | Create and manage Python virtual environments | `python3 sys/utils/venv.py` or `just venv` |
+| **xdg_paths.py** | Display XDG Base Directory specification paths | `python3 sys/utils/xdg_paths.py` or `just xdg-paths` |
+
+**Note**: All utility scripts follow the same theming and configuration patterns as the core build scripts.
 
 ---
 
@@ -492,9 +551,10 @@ if __name__ == '__main__':
 
 #### Environment Configuration
 
-- **Config File**: `sys/env/.env` (loaded by all Python scripts)
-- **Template**: `sys/env/.env.example` (for reference)
-- **Variables**: SERVER_HOST, SERVER_PORT, RUST_TOOLCHAIN, etc.
+- **Development Config**: `sys/env/.env.dev` (for development tools like lines.py, pylint.py)
+- **Production Config**: `sys/env/.env` (for deployment scripts, not tracked in git)
+- **Template**: `sys/env/.env.example` (comprehensive configuration template)
+- **Variables**: SERVER_HOST, SERVER_PORT, RUST_TOOLCHAIN, THEME_DIR, XDG_*, etc.
 
 #### Reference Scripts
 
@@ -588,13 +648,15 @@ cargo clippy --all-targets -- -D warnings
 ### Credential Handling
 
 **Never commit**:
-- `sys/env/.env` file (use `sys/env/.env.example` template instead)
+- `sys/env/.env` or `sys/env/.env.dev` files (use `sys/env/.env.example` template instead)
+- `.env*` files in project root
 - Certificates (`.pem`, `.key`, `.crt`)
 - SSH keys
 - Cloud credentials
 - Database files
+- Server logs (`server.log`, `.server.pid`)
 
-See `.gitignore:24-60` for full exclusion list.
+See `.gitignore` for full exclusion list.
 
 ### Docker Security
 
@@ -641,6 +703,59 @@ CONFIG_FILE=sysrat.toml
 ```
 
 **Note**: The Rust server does not use dotenv. Configuration is passed via command-line arguments or environment variables at runtime.
+
+### XDG Base Directory Compliance
+
+The project follows the **XDG Base Directory Specification** for user files and state:
+
+#### Directory Structure
+
+| XDG Directory | Default Path | Purpose |
+|---------------|--------------|---------|
+| `XDG_CONFIG_HOME` | `~/.config/sysrat/` | User configuration files (themes, keybinds, config) |
+| `XDG_STATE_HOME` | `~/.local/state/sysrat/` | Application state (logs, history, cache) |
+| `XDG_RUNTIME_DIR` | `/run/user/$UID/sysrat/` | Runtime files (PID, sockets) - if available |
+
+#### Configuration File Search Order
+
+The server searches for `sysrat.toml` in this order:
+
+1. `$XDG_CONFIG_HOME/sysrat/sysrat.toml`
+2. `~/.config/sysrat/sysrat.toml` (fallback if XDG_CONFIG_HOME not set)
+3. `./sysrat.toml` (current directory, for development)
+
+#### User Customization
+
+Users can override defaults by placing files in XDG directories:
+
+```bash
+# Custom theme
+~/.config/sysrat/themes/custom.toml
+
+# Custom keybinds
+~/.config/sysrat/keybinds.toml
+
+# Custom configuration
+~/.config/sysrat/sysrat.toml
+
+# Application logs (automatically created)
+~/.local/state/sysrat/sysrat.log
+```
+
+#### Utility Script
+
+Check your XDG paths:
+```bash
+python3 sys/utils/xdg_paths.py
+# or
+just xdg-paths
+```
+
+**Benefits**:
+- Follows Linux standards
+- Keeps home directory clean
+- Supports multi-user systems
+- Enables easy backups (backup `~/.config/sysrat/` and `~/.local/state/sysrat/`)
 
 ---
 
@@ -773,15 +888,26 @@ let main_chunks = Layout::default()
 
 ### Changing the Color Theme
 
-The application uses a three-layer theme system:
+The application uses a three-layer theme system with **multiple Catppuccin theme variants**:
 
-1. **Base Colors** - Raw RGB values defined in `frontend/theme.toml`
+1. **Base Colors** - Raw RGB values defined in `frontend/themes/*.toml`
 2. **Semantic Colors** - Meaningful mappings (ACCENT, SUCCESS, ERROR, etc.)
 3. **Component Themes** - UI-specific style builders that follow standardized patterns
 
-#### Modifying Base Colors
+#### Available Theme Variants
 
-Edit `frontend/theme.toml`:
+The project includes four Catppuccin theme variants:
+
+| Theme | File | Description |
+|-------|------|-------------|
+| **Mocha** | `frontend/themes/mocha.toml` | Dark theme (default) - Deep, rich colors |
+| **Frappe** | `frontend/themes/frappe.toml` | Dark theme (warm) - Slightly warmer tones |
+| **Latte** | `frontend/themes/latte.toml` | Light theme - Perfect for daylight use |
+| **Macchiato** | `frontend/themes/macchiato.toml` | Dark theme (cool) - Cooler color temperature |
+
+#### Modifying Theme Colors
+
+Edit any theme file (e.g., `frontend/themes/mocha.toml`):
 
 ```toml
 [colors]
@@ -792,10 +918,20 @@ red = [237, 135, 150]
 # ... add more colors
 
 [semantic]
-# Semantic mappings
+# Semantic mappings (reference color names above)
 accent = "lavender"
 success = "green"
 error = "red"
+normal_mode = "sapphire"
+insert_mode = "mauve"
+
+[font]
+# Font configuration (used by frontend HTML)
+family = "Fira Code"
+fallback = "monospace"
+size = 16
+weight = 400
+cdn_url = "https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/fira_code.min.css"
 ```
 
 Theme colors are injected at compile time via `frontend/build.rs`.
@@ -1218,6 +1354,8 @@ Examples:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 0.3.0 | 2025-11-17 | Added: Multiple theme variants (Mocha, Frappe, Latte, Macchiato), Font configuration system, XDG Base Directory compliance, New utility scripts (lines.py, pycompile.py, pyclean.py, fix_nerdfonts.py, remove_emojis.py, venv.py, xdg_paths.py), Comprehensive justfile commands (rust-checks, python-checks, all-checks, pre-commit), Environment config split (.env.dev for development) |
+| 0.2.0 | 2025-11-17 | Updated development workflows and Python script conventions |
 | 0.1.0 | 2025-11-15 | Initial CLAUDE.md creation |
 
 ---
