@@ -4,6 +4,9 @@ README Generator for SysRat - Lists user-facing files and directories
 """
 
 import sys
+import tomllib
+import subprocess
+from datetime import datetime
 from pathlib import Path
 
 # Add sys/theme to path for central theming
@@ -13,6 +16,83 @@ sys.path.insert(0, str(REPO_ROOT / 'sys' / 'theme'))
 
 # Import central theme
 from theme import Colors, Icons, log_success
+
+
+def get_git_info() -> dict:
+    """Get git hash and build date."""
+    info = {}
+
+    # Get current git hash (short)
+    try:
+        result = subprocess.run(
+            ['git', 'rev-parse', '--short', 'HEAD'],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        info['hash'] = result.stdout.strip()
+    except Exception:
+        info['hash'] = 'unknown'
+
+    # Get current date
+    info['date'] = datetime.now().strftime('%Y-%m-%d')
+
+    return info
+
+
+def extract_versions() -> dict:
+    """Extract dependency versions from Cargo.toml files."""
+    versions = {}
+
+    # Read workspace Cargo.toml for edition
+    workspace_toml = REPO_ROOT / 'Cargo.toml'
+    if workspace_toml.exists():
+        try:
+            with open(workspace_toml, 'rb') as f:
+                data = tomllib.load(f)
+            if 'workspace' in data and 'package' in data['workspace']:
+                edition = data['workspace']['package'].get('edition', 'unknown')
+                versions['edition'] = edition
+        except Exception:
+            versions['edition'] = 'unknown'
+
+    # Read server Cargo.toml for Axum version
+    server_toml = REPO_ROOT / 'server' / 'Cargo.toml'
+    if server_toml.exists():
+        try:
+            with open(server_toml, 'rb') as f:
+                data = tomllib.load(f)
+            if 'dependencies' in data:
+                axum = data['dependencies'].get('axum', 'unknown')
+                if isinstance(axum, dict):
+                    axum = axum.get('version', 'unknown')
+                versions['axum'] = axum
+        except Exception:
+            versions['axum'] = 'unknown'
+
+    # Read frontend Cargo.toml for Ratzilla and Ratatui versions
+    frontend_toml = REPO_ROOT / 'frontend' / 'Cargo.toml'
+    if frontend_toml.exists():
+        try:
+            with open(frontend_toml, 'rb') as f:
+                data = tomllib.load(f)
+            if 'dependencies' in data:
+                # Ratzilla
+                ratzilla = data['dependencies'].get('ratzilla', 'unknown')
+                if isinstance(ratzilla, dict):
+                    ratzilla = ratzilla.get('version', 'unknown')
+                versions['ratzilla'] = ratzilla
+
+                # Ratatui (via tui-textarea dependency)
+                # We get ratatui version indirectly, or hardcode known version
+                # For simplicity, we'll note it's via ratzilla
+                versions['ratatui'] = 'via ratzilla'
+        except Exception:
+            versions['ratzilla'] = 'unknown'
+            versions['ratatui'] = 'unknown'
+
+    return versions
 
 
 def get_project_files() -> dict:
@@ -69,21 +149,46 @@ def get_description(filename: str) -> str:
     return descriptions.get(filename, '')
 
 
-def generate_readme(files: dict) -> str:
+def generate_readme(files: dict, versions: dict, git_info: dict) -> str:
     """Generate README with file links organized by category."""
+
+    # Nerd Font Icons (matching theme.py)
+    ROCKET = ''
+    SERVER = '󰒋'
+    HAMMER = ''
+    FOLDER = ''
+    FILE = ''
+    CHART = '󰈙'
+    INFO = ''
 
     readme = "# SysRat\n\n"
     readme += "**SysRat** is a full-stack web-based configuration management system written in Rust.\n\n"
-    readme += "- **Backend**: Rust + Axum (async web framework)\n"
-    readme += "- **Frontend**: WASM + Ratzilla (terminal UI in the browser)\n"
-    readme += "- **Features**: Configuration file management, Docker container management\n\n"
+    readme += f"- **Backend**: {SERVER} Rust + Axum (async web framework)\n"
+    readme += f"- **Frontend**: {CHART} WASM + Ratzilla (terminal UI in the browser)\n"
+    readme += f"- **Features**: Configuration file management, Docker container management\n\n"
+
+    # Build info
+    build_date = git_info.get('date', 'unknown')
+    build_hash = git_info.get('hash', 'unknown')
+    readme += f"[build] {INFO}  **Last Updated**: {build_date} (`{build_hash}`)\n\n"
+
+    # Tech Stack with versions
+    readme += f"## {HAMMER} Tech Stack\n\n"
+    edition = versions.get('edition', 'unknown')
+    axum = versions.get('axum', 'unknown')
+    ratzilla = versions.get('ratzilla', 'unknown')
+
+    readme += f"**Rust Edition {edition}**\n\n"
+    readme += f"- **Backend**: {SERVER} Axum v{axum}\n"
+    readme += f"- **Frontend**: {CHART} Ratzilla v{ratzilla} (Ratatui-based WASM TUI)\n"
+    readme += f"- **Build**: {HAMMER} Trunk (WASM bundler), Cargo (Rust toolchain)\n\n"
 
     # Management Scripts
     if files['management_scripts']:
-        readme += "## Management Scripts\n\n"
+        readme += f"## {ROCKET} Management Scripts\n\n"
         for script in files['management_scripts']:
             desc = get_description(script)
-            readme += f"- [{script}]({script})"
+            readme += f"- {FILE} [{script}]({script})"
             if desc:
                 readme += f" - {desc}"
             readme += "\n"
@@ -91,10 +196,10 @@ def generate_readme(files: dict) -> str:
 
     # Configuration Files
     if files['config_files']:
-        readme += "## Configuration\n\n"
+        readme += f"## {FILE} Configuration\n\n"
         for config in files['config_files']:
             desc = get_description(config)
-            readme += f"- [{config}]({config})"
+            readme += f"- {FILE} [{config}]({config})"
             if desc:
                 readme += f" - {desc}"
             readme += "\n"
@@ -102,10 +207,10 @@ def generate_readme(files: dict) -> str:
 
     # Project Structure
     if files['project_dirs']:
-        readme += "## Project Structure\n\n"
+        readme += f"## {FOLDER} Project Structure\n\n"
         for directory in files['project_dirs']:
             desc = get_description(directory)
-            readme += f"- `{directory}/`"
+            readme += f"- {FOLDER} `{directory}/`"
             if desc:
                 readme += f" - {desc}"
             readme += "\n"
@@ -135,8 +240,10 @@ def generate_readme(files: dict) -> str:
 
 def main():
     """Main function."""
+    git_info = get_git_info()
+    versions = extract_versions()
     files = get_project_files()
-    readme_content = generate_readme(files)
+    readme_content = generate_readme(files, versions, git_info)
 
     # Write README
     readme_path = REPO_ROOT / 'README.md'
