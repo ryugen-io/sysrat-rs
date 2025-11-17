@@ -11,14 +11,21 @@ use ratzilla::ratatui::{
 
 pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
     let theme = &state.current_theme;
-    let mode_text = StatusLineTheme::mode_text(state.vim_mode);
-    let mode_style = StatusLineTheme::mode_style(theme, state.vim_mode);
 
-    let mut spans = vec![Span::styled(format!(" {} ", mode_text), mode_style)];
+    let mut spans = vec![];
+
+    // Only show vim mode in Editor and FileList (where NORMAL/INSERT is relevant)
+    if matches!(state.focus, Pane::Editor | Pane::FileList) {
+        let mode_text = StatusLineTheme::mode_text(state.vim_mode);
+        let mode_style = StatusLineTheme::mode_style(theme, state.vim_mode);
+        spans.push(Span::styled(format!(" {} ", mode_text), mode_style));
+    }
 
     // Only show file info in Editor and FileList
     if matches!(state.focus, Pane::Editor | Pane::FileList) {
-        spans.push(Span::raw(" | "));
+        if !spans.is_empty() {
+            spans.push(Span::raw(" | "));
+        }
         if let Some(filename) = &state.editor.current_file {
             spans.push(Span::styled(
                 filename,
@@ -42,7 +49,9 @@ pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
     if state.focus != Pane::Menu
         && let Some(ref msg) = state.status_message
     {
-        spans.push(Span::raw(" | "));
+        if !spans.is_empty() {
+            spans.push(Span::raw(" | "));
+        }
         let style = if msg.starts_with("[ERROR") {
             StatusLineTheme::error_message_style(theme)
         } else {
@@ -51,31 +60,21 @@ pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
         spans.push(Span::styled(msg, style));
     }
 
+    // Help text - add separator only if spans is not empty
     let help_text = match (state.focus, state.vim_mode) {
-        (Pane::Menu, _) => format!(
-            " | {}",
-            state.keybinds.menu.help_text(&state.keybinds.global)
-        ),
-        (Pane::FileList, _) => {
-            format!(
-                " | {}",
-                state.keybinds.file_list.help_text(&state.keybinds.global)
-            )
-        }
-        (Pane::Editor, VimMode::Normal) => {
-            format!(" | {}", state.keybinds.global.editor_normal_help_text())
-        }
-        (Pane::Editor, VimMode::Insert) => {
-            format!(" | {}", state.keybinds.global.editor_insert_help_text())
-        }
-        (Pane::ContainerList, _) => format!(
-            " | {}",
-            state
-                .keybinds
-                .container_list
-                .help_text(&state.keybinds.global)
-        ),
+        (Pane::Menu, _) => state.keybinds.menu.help_text(&state.keybinds.global),
+        (Pane::FileList, _) => state.keybinds.file_list.help_text(&state.keybinds.global),
+        (Pane::Editor, VimMode::Normal) => state.keybinds.global.editor_normal_help_text(),
+        (Pane::Editor, VimMode::Insert) => state.keybinds.global.editor_insert_help_text(),
+        (Pane::ContainerList, _) => state
+            .keybinds
+            .container_list
+            .help_text(&state.keybinds.global),
     };
+
+    if !spans.is_empty() {
+        spans.push(Span::raw(" | "));
+    }
     spans.push(Span::styled(
         help_text,
         StatusLineTheme::help_text_style(theme),
