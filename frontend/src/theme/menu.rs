@@ -9,6 +9,10 @@ impl MenuTheme {
         theme.standard_title()
     }
 
+    pub fn ascii_art_style(theme: &ThemeConfig) -> Style {
+        theme.standard_ascii_art()
+    }
+
     pub fn border_style(theme: &ThemeConfig) -> Style {
         theme.standard_border_focused()
     }

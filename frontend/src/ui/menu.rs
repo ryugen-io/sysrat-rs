@@ -39,7 +39,7 @@ fn render_rat_ascii(f: &mut Frame, state: &AppState, area: Rect) {
 
     let lines: Vec<Line> = sysrat_ascii
         .lines()
-        .map(|line| Line::from(Span::styled(line, MenuTheme::title_style(theme))))
+        .map(|line| Line::from(Span::styled(line, MenuTheme::ascii_art_style(theme))))
         .collect();
 
     let sysrat_widget = Paragraph::new(lines).alignment(Alignment::Center).block(

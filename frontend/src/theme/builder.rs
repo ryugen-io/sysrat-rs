@@ -54,4 +54,10 @@ impl ThemeConfig {
     pub fn standard_highlight_bg(&self) -> Style {
         Style::default().bg(self.surface1())
     }
+
+    /// Standard style for ASCII art (uses background color as foreground)
+    /// This makes Braille pattern characters blend with the background
+    pub fn standard_ascii_art(&self) -> Style {
+        Style::default().fg(self.mantle())
+    }
 }
