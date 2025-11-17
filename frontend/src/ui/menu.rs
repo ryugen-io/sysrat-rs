@@ -39,7 +39,7 @@ fn render_rat_ascii(f: &mut Frame, state: &AppState, area: Rect) {
 
     let lines: Vec<Line> = sysrat_ascii
         .lines()
-        .map(|line| Line::from(Span::styled(line, MenuTheme::ascii_art_style(theme))))
+        .map(|line| Line::from(Span::styled(line, MenuTheme::normal_item_style(theme))))
         .collect();
 
     let sysrat_widget = Paragraph::new(lines).alignment(Alignment::Center).block(
@@ -65,8 +65,11 @@ fn render_menu_center(f: &mut Frame, state: &AppState, area: Rect) {
         )));
     }
 
-    // Add spacing
-    lines.push(Line::from(""));
+    // Add spacing (styled to hide Braille characters)
+    lines.push(Line::from(Span::styled(
+        "",
+        MenuTheme::ascii_art_style(theme),
+    )));
 
     // Add menu items with icons
     for (i, item) in state.menu.items.iter().enumerate() {
@@ -111,9 +114,9 @@ fn render_keybinds(f: &mut Frame, state: &AppState, area: Rect) {
     let keybinds = &state.keybinds;
 
     let lines = vec![
-        Line::from(""),
+        Line::from(Span::styled("", MenuTheme::ascii_art_style(theme))),
         Line::from(Span::styled("KEYBINDS", MenuTheme::title_style(theme))),
-        Line::from(""),
+        Line::from(Span::styled("", MenuTheme::ascii_art_style(theme))),
         Line::from(Span::styled("NAVIGATION", MenuTheme::title_style(theme))),
         Line::from(Span::styled(
             format!(
@@ -129,13 +132,13 @@ fn render_keybinds(f: &mut Frame, state: &AppState, area: Rect) {
             ),
             MenuTheme::normal_item_style(theme),
         )),
-        Line::from(""),
+        Line::from(Span::styled("", MenuTheme::ascii_art_style(theme))),
         Line::from(Span::styled("SELECTION", MenuTheme::title_style(theme))),
         Line::from(Span::styled(
             format!("{} - Select", keybinds.menu.select),
             MenuTheme::normal_item_style(theme),
         )),
-        Line::from(""),
+        Line::from(Span::styled("", MenuTheme::ascii_art_style(theme))),
         Line::from(Span::styled("GLOBAL", MenuTheme::title_style(theme))),
         Line::from(Span::styled(
             format!("{} - Cycle Theme", keybinds.global.cycle_theme),
