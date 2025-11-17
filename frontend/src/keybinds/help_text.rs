@@ -3,8 +3,8 @@ use super::types::*;
 impl MenuKeybinds {
     pub fn help_text(&self, global: &GlobalKeybinds) -> String {
         format!(
-            "{}/{}:navigate {}:select {}:theme",
-            self.navigate_down, self.navigate_up, self.select, global.cycle_theme
+            "{},{}/{}:navigate {}:select {}:theme",
+            self.navigate_down, self.navigate_down_alt, self.navigate_up, self.select, global.cycle_theme
         )
     }
 }
@@ -12,8 +12,8 @@ impl MenuKeybinds {
 impl FileListKeybinds {
     pub fn help_text(&self, _global: &GlobalKeybinds) -> String {
         format!(
-            "{}/{}:navigate {}:load {}:menu {}:editor",
-            self.navigate_down, self.navigate_up, self.select, self.back_to_menu, self.go_to_editor
+            "{},{}/{}:navigate {}:load {}:menu {}:editor",
+            self.navigate_down, self.navigate_down_alt, self.navigate_up, self.select, self.back_to_menu, self.go_to_editor
         )
     }
 }
@@ -21,8 +21,9 @@ impl FileListKeybinds {
 impl ContainerListKeybinds {
     pub fn help_text(&self, _global: &GlobalKeybinds) -> String {
         format!(
-            "{}/{}:navigate {}:start {}:stop {}:restart {}:menu",
+            "{},{}/{}:navigate {}:start {}:stop {}:restart {}:menu",
             self.navigate_down,
+            self.navigate_down_alt,
             self.navigate_up,
             self.start_container,
             self.stop_container,
