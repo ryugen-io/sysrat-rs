@@ -23,6 +23,15 @@ pub fn handle_key_event(state: Rc<RefCell<AppState>>, key_event: KeyEvent) {
         return;
     }
 
+    // F3: Cycle theme
+    if key_event.code == KeyCode::F(3) {
+        let current_name =
+            crate::theme::load_theme_preference().unwrap_or_else(|| "mocha".to_string());
+        let next_name = crate::theme::next_theme_name(&current_name);
+        state_mut.set_theme(next_name);
+        return;
+    }
+
     // Ctrl+Left: Focus file list
     if key_event.ctrl && key_event.code == KeyCode::Left {
         state_mut.focus = Pane::FileList;

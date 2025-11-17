@@ -1,5 +1,10 @@
 use super::{ContainerListState, EditorState, FileListState, MenuState, Pane, VimMode, refresh};
-use crate::{api::ContainerDetails, keybinds::Keybinds, storage};
+use crate::{
+    api::ContainerDetails,
+    keybinds::Keybinds,
+    storage,
+    theme::{ThemeConfig, load_current_theme},
+};
 
 pub struct AppState {
     pub focus: Pane,
@@ -12,6 +17,7 @@ pub struct AppState {
     pub dirty: bool,
     pub status_message: Option<String>,
     pub keybinds: Keybinds,
+    pub current_theme: ThemeConfig,
 }
 
 impl AppState {
@@ -27,6 +33,7 @@ impl AppState {
             dirty: false,
             status_message: None,
             keybinds: Keybinds::load(),
+            current_theme: load_current_theme(),
         };
 
         // Try to restore from localStorage
@@ -73,5 +80,15 @@ impl AppState {
     pub fn check_dirty(&mut self) {
         let current_content = self.editor.textarea.lines().join("\n");
         self.dirty = current_content != self.editor.original_content;
+    }
+
+    pub fn set_theme(&mut self, theme_name: &str) {
+        if let Ok(theme) = crate::theme::load_theme_by_name(theme_name) {
+            self.current_theme = theme;
+            crate::theme::save_theme_preference(theme_name);
+            self.set_status(format!("Theme changed to: {}", theme_name));
+        } else {
+            self.set_status(format!("Theme '{}' not found", theme_name));
+        }
     }
 }

@@ -10,12 +10,13 @@ use ratzilla::ratatui::{
 };
 
 pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
+    let theme = &state.current_theme;
     let is_focused = state.focus == Pane::FileList;
 
     let border_style = if is_focused {
-        FileListTheme::border_focused()
+        FileListTheme::border_focused(theme)
     } else {
-        FileListTheme::border_unfocused()
+        FileListTheme::border_unfocused(theme)
     };
 
     let items: Vec<ListItem> = state
@@ -25,7 +26,7 @@ pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
         .map(|file| {
             ListItem::new(Line::from(vec![Span::styled(
                 &file.name,
-                FileListTheme::normal_item_style(),
+                FileListTheme::normal_item_style(theme),
             )]))
         })
         .collect();
@@ -37,7 +38,7 @@ pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
                 .borders(Borders::ALL)
                 .border_style(border_style),
         )
-        .highlight_style(FileListTheme::selected_item_style())
+        .highlight_style(FileListTheme::selected_item_style(theme))
         .highlight_symbol(FileListTheme::selected_prefix());
 
     let mut list_state = ListState::default();

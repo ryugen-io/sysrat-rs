@@ -29,9 +29,13 @@ pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
     let menu_area = horizontal_chunks[1];
 
     // Build menu content
+    let theme = &state.current_theme;
     let mut lines = vec![
         Line::from(""),
-        Line::from(Span::styled("CONFIG MANAGER", MenuTheme::title_style())),
+        Line::from(Span::styled(
+            "CONFIG MANAGER",
+            MenuTheme::title_style(theme),
+        )),
         Line::from(""),
         Line::from(""),
     ];
@@ -40,9 +44,9 @@ pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
         let is_selected = i == state.menu.selected_index;
 
         let style = if is_selected {
-            MenuTheme::selected_item_style()
+            MenuTheme::selected_item_style(theme)
         } else {
-            MenuTheme::normal_item_style()
+            MenuTheme::normal_item_style(theme)
         };
 
         let prefix = if is_selected {
@@ -60,7 +64,7 @@ pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
     let menu = Paragraph::new(lines).alignment(Alignment::Center).block(
         Block::default()
             .borders(Borders::ALL)
-            .border_style(MenuTheme::border_style()),
+            .border_style(MenuTheme::border_style(theme)),
     );
 
     f.render_widget(menu, menu_area);

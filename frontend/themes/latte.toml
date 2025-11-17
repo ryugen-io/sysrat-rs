@@ -1,0 +1,28 @@
+# Catppuccin Latte Theme Configuration (Light Theme)
+# Edit RGB values and rebuild to apply changes
+
+[colors]
+# Base colors
+lavender = [114, 135, 253]  # Primary accent
+mauve = [136, 57, 239]      # Purple/Magenta
+sapphire = [32, 159, 181]   # Blue
+green = [64, 160, 43]       # Green
+yellow = [223, 142, 29]     # Yellow
+peach = [254, 100, 11]      # Orange
+red = [210, 15, 57]         # Red
+text = [76, 79, 105]        # Main text
+subtext0 = [108, 111, 133]  # Dimmed text
+overlay1 = [140, 143, 161]  # Medium dimmed
+surface1 = [230, 233, 239]  # Highlight background (lighter)
+mantle = [239, 241, 245]    # Light background
+
+[semantic]
+# Semantic color mappings (reference color names above)
+accent = "lavender"
+selected = "yellow"
+modified = "peach"
+success = "green"
+error = "red"
+normal_mode = "sapphire"
+insert_mode = "mauve"
+dim = "subtext0"

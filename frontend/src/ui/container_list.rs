@@ -10,6 +10,7 @@ use ratzilla::ratatui::{
 };
 
 pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
+    let theme = &state.current_theme;
     let is_focused = state.focus == Pane::ContainerList;
 
     let items: Vec<ListItem> = state
@@ -17,17 +18,17 @@ pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
         .containers
         .iter()
         .map(|container| {
-            let status_color = ContainerListTheme::status_color(&container.state);
+            let status_color = ContainerListTheme::status_color(theme, &container.state);
 
             let short_id = &container.id[..12.min(container.id.len())];
             let line = Line::from(vec![
                 ratzilla::ratatui::text::Span::styled(
                     format!("{:<12} ", short_id),
-                    ContainerListTheme::id_style(),
+                    ContainerListTheme::id_style(theme),
                 ),
                 ratzilla::ratatui::text::Span::styled(
                     format!("{:<15} ", container.name),
-                    ContainerListTheme::name_style(),
+                    ContainerListTheme::name_style(theme),
                 ),
                 ratzilla::ratatui::text::Span::styled(
                     format!("[{}] ", container.state),
@@ -35,7 +36,7 @@ pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
                 ),
                 ratzilla::ratatui::text::Span::styled(
                     &container.status,
-                    ContainerListTheme::status_info_style(),
+                    ContainerListTheme::status_info_style(theme),
                 ),
             ]);
 
@@ -44,9 +45,9 @@ pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
         .collect();
 
     let border_style = if is_focused {
-        ContainerListTheme::border_focused()
+        ContainerListTheme::border_focused(theme)
     } else {
-        ContainerListTheme::border_unfocused()
+        ContainerListTheme::border_unfocused(theme)
     };
 
     let block = Block::default()
@@ -56,7 +57,7 @@ pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
 
     let list = List::new(items)
         .block(block)
-        .highlight_style(ContainerListTheme::highlight_style());
+        .highlight_style(ContainerListTheme::highlight_style(theme));
 
     let mut list_state = ListState::default();
     list_state.select(Some(state.container_list.selected_index));

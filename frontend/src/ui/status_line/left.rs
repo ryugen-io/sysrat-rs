@@ -10,8 +10,9 @@ use ratzilla::ratatui::{
 };
 
 pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
+    let theme = &state.current_theme;
     let mode_text = StatusLineTheme::mode_text(state.vim_mode);
-    let mode_style = StatusLineTheme::mode_style(state.vim_mode);
+    let mode_style = StatusLineTheme::mode_style(theme, state.vim_mode);
 
     let mut spans = vec![Span::styled(format!(" {} ", mode_text), mode_style)];
 
@@ -19,15 +20,21 @@ pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
     if matches!(state.focus, Pane::Editor | Pane::FileList) {
         spans.push(Span::raw(" | "));
         if let Some(filename) = &state.editor.current_file {
-            spans.push(Span::styled(filename, StatusLineTheme::filename_style()));
+            spans.push(Span::styled(
+                filename,
+                StatusLineTheme::filename_style(theme),
+            ));
             if state.dirty {
                 spans.push(Span::styled(
                     " [modified]",
-                    StatusLineTheme::modified_style(),
+                    StatusLineTheme::modified_style(theme),
                 ));
             }
         } else {
-            spans.push(Span::styled("No file", StatusLineTheme::no_file_style()));
+            spans.push(Span::styled(
+                "No file",
+                StatusLineTheme::no_file_style(theme),
+            ));
         }
     }
 
@@ -37,9 +44,9 @@ pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
     {
         spans.push(Span::raw(" | "));
         let style = if msg.starts_with("[ERROR") {
-            StatusLineTheme::error_message_style()
+            StatusLineTheme::error_message_style(theme)
         } else {
-            StatusLineTheme::status_message_style()
+            StatusLineTheme::status_message_style(theme)
         };
         spans.push(Span::styled(msg, style));
     }
@@ -60,10 +67,13 @@ pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
         }
         (Pane::ContainerList, _) => format!(" | {}", state.keybinds.container_list.help_text()),
     };
-    spans.push(Span::styled(help_text, StatusLineTheme::help_text_style()));
+    spans.push(Span::styled(
+        help_text,
+        StatusLineTheme::help_text_style(theme),
+    ));
 
     let status_line = Paragraph::new(Line::from(spans))
-        .style(StatusLineTheme::background())
+        .style(StatusLineTheme::background(theme))
         .alignment(Alignment::Left);
 
     f.render_widget(status_line, area);

@@ -19,18 +19,21 @@ pub fn main() -> Result<(), JsValue> {
     // Set up panic hook for better error messages
     console_error_panic_hook::set_once();
 
+    // Initialize app state
+    let app_state = Rc::new(RefCell::new(AppState::new()));
+
     // Set body background color from theme
     if let Some(win) = window()
         && let Some(doc) = win.document()
         && let Some(body) = doc.body()
     {
-        let mantle_rgb = env!("THEME_COLOR_MANTLE");
-        let bg_color = format!("rgb({})", mantle_rgb);
-        let _ = body.set_attribute("style", &format!("background-color: {}", bg_color));
+        let theme = &app_state.borrow().current_theme;
+        let mantle = theme.mantle();
+        if let ratzilla::ratatui::style::Color::Rgb(r, g, b) = mantle {
+            let bg_color = format!("rgb({}, {}, {})", r, g, b);
+            let _ = body.set_attribute("style", &format!("background-color: {}", bg_color));
+        }
     }
-
-    // Initialize app state
-    let app_state = Rc::new(RefCell::new(AppState::new()));
 
     // Load cached lists from storage
     state::refresh::load_pane_cache(Pane::FileList, &mut app_state.borrow_mut());

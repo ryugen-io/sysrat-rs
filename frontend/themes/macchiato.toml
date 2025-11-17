@@ -1,0 +1,28 @@
+# Catppuccin Macchiato Theme Configuration
+# Edit RGB values and rebuild to apply changes
+
+[colors]
+# Base colors
+lavender = [183, 189, 248]  # Primary accent
+mauve = [198, 160, 246]     # Purple/Magenta
+sapphire = [125, 196, 228]  # Blue
+green = [166, 218, 149]     # Green
+yellow = [238, 212, 159]    # Yellow
+peach = [245, 169, 127]     # Orange
+red = [237, 135, 150]       # Red
+text = [202, 211, 245]      # Main text
+subtext0 = [165, 173, 203]  # Dimmed text
+overlay1 = [128, 135, 162]  # Medium dimmed
+surface1 = [54, 58, 79]     # Highlight background
+mantle = [36, 39, 58]       # Darker background
+
+[semantic]
+# Semantic color mappings (reference color names above)
+accent = "lavender"
+selected = "yellow"
+modified = "peach"
+success = "green"
+error = "red"
+normal_mode = "sapphire"
+insert_mode = "mauve"
+dim = "subtext0"

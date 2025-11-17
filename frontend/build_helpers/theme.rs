@@ -1,36 +1,62 @@
 use std::fs;
+use std::path::PathBuf;
 
 pub fn load_theme_config() {
-    let theme_content = fs::read_to_string("../sys/theme/theme.toml")
-        .expect("Failed to read ../sys/theme/theme.toml");
-    let theme: toml::Value = toml::from_str(&theme_content).expect("Failed to parse theme.toml");
+    // Embed all available themes for runtime selection
+    embed_runtime_themes();
+}
 
-    let colors = theme
-        .get("colors")
-        .and_then(|c| c.as_table())
-        .expect("Missing [colors] section in theme.toml");
+fn embed_runtime_themes() {
+    let mut themes = Vec::new();
 
-    for (name, value) in colors {
-        if let Some(rgb) = parse_rgb_array(value) {
-            set_theme_color_env(name, rgb);
+    // Scan default themes from frontend/themes/
+    if let Ok(entries) = fs::read_dir("themes") {
+        for entry in entries.flatten() {
+            if let Some(name) = get_theme_name(&entry.path()) {
+                themes.push((name, entry.path()));
+            }
         }
     }
-}
 
-fn parse_rgb_array(value: &toml::Value) -> Option<(u8, u8, u8)> {
-    let rgb_array = value.as_array()?;
-    if rgb_array.len() != 3 {
-        return None;
+    // Scan user custom themes from USER_THEME_DIR env var
+    if let Ok(user_theme_dir) = std::env::var("USER_THEME_DIR") {
+        // Expand tilde in path
+        let expanded_path = if let Some(stripped) = user_theme_dir.strip_prefix("~/") {
+            if let Ok(home) = std::env::var("HOME") {
+                PathBuf::from(home).join(stripped)
+            } else {
+                PathBuf::from(&user_theme_dir)
+            }
+        } else {
+            PathBuf::from(&user_theme_dir)
+        };
+
+        if let Ok(entries) = fs::read_dir(expanded_path) {
+            for entry in entries.flatten() {
+                if let Some(name) = get_theme_name(&entry.path()) {
+                    // Don't duplicate if theme name already exists
+                    if !themes.iter().any(|(n, _)| n == &name) {
+                        themes.push((name, entry.path()));
+                    }
+                }
+            }
+        }
     }
 
-    let r = rgb_array[0].as_integer()? as u8;
-    let g = rgb_array[1].as_integer()? as u8;
-    let b = rgb_array[2].as_integer()? as u8;
+    // Set theme file paths as env vars (for custom themes if needed)
+    for (name, path) in &themes {
+        let env_name = format!("THEME_FILE_{}", name.to_uppercase().replace('-', "_"));
+        println!("cargo:rustc-env={}={}", env_name, path.display());
+    }
 
-    Some((r, g, b))
+    // Generate theme names list (for runtime iteration)
+    let theme_names: Vec<&str> = themes.iter().map(|(n, _)| n.as_str()).collect();
+    println!("cargo:rustc-env=THEME_NAMES={}", theme_names.join(","));
 }
 
-fn set_theme_color_env(name: &str, (r, g, b): (u8, u8, u8)) {
-    let env_name = format!("THEME_COLOR_{}", name.to_uppercase());
-    println!("cargo:rustc-env={}={},{},{}", env_name, r, g, b);
+fn get_theme_name(path: &std::path::Path) -> Option<String> {
+    if path.extension()? != "toml" {
+        return None;
+    }
+    path.file_stem()?.to_str().map(String::from)
 }

@@ -1,0 +1,28 @@
+# Catppuccin Frappe Theme Configuration
+# Edit RGB values and rebuild to apply changes
+
+[colors]
+# Base colors
+lavender = [186, 187, 241]  # Primary accent
+mauve = [202, 158, 230]     # Purple/Magenta
+sapphire = [133, 193, 220]  # Blue
+green = [166, 209, 137]     # Green
+yellow = [229, 200, 144]    # Yellow
+peach = [239, 159, 118]     # Orange
+red = [231, 130, 132]       # Red
+text = [198, 208, 245]      # Main text
+subtext0 = [165, 173, 206]  # Dimmed text
+overlay1 = [131, 139, 167]  # Medium dimmed
+surface1 = [51, 54, 76]     # Highlight background
+mantle = [41, 44, 60]       # Darker background
+
+[semantic]
+# Semantic color mappings (reference color names above)
+accent = "lavender"
+selected = "yellow"
+modified = "peach"
+success = "green"
+error = "red"
+normal_mode = "sapphire"
+insert_mode = "mauve"
+dim = "subtext0"

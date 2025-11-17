@@ -91,3 +91,19 @@ fn deserialize_option_string(value: &str) -> Option<String> {
             .replace("\\\\", "\\"),
     )
 }
+
+// Theme preference storage
+const THEME_KEY: &str = "config-manager-theme";
+
+pub fn save_theme_preference(theme_name: &str) {
+    if let Some(storage) = get_local_storage() {
+        let _ = storage.set_item(THEME_KEY, theme_name);
+    }
+}
+
+pub fn load_theme_preference() -> Option<String> {
+    if let Some(storage) = get_local_storage() {
+        return storage.get_item(THEME_KEY).ok()?;
+    }
+    None
+}

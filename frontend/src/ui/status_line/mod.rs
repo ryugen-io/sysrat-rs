@@ -20,5 +20,5 @@ pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
     left::render(f, state, rows[0]);
 
     // Row 2: Build info (full width, right aligned)
-    right::render(f, rows[1]);
+    right::render(f, state, rows[1]);
 }

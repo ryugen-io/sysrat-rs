@@ -5,10 +5,7 @@ mod file_list;
 mod menu;
 mod status_line;
 
-use crate::{
-    state::{AppState, Pane},
-    theme::Theme,
-};
+use crate::state::{AppState, Pane};
 use ratzilla::ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout},
@@ -18,7 +15,7 @@ use ratzilla::ratatui::{
 
 pub fn render(f: &mut Frame, state: &AppState) {
     // Set global background to MANTLE
-    let background = Block::default().style(Style::default().bg(Theme::MANTLE));
+    let background = Block::default().style(Style::default().bg(state.current_theme.mantle()));
     background.render(f.area(), f.buffer_mut());
 
     let chunks = Layout::default()

@@ -9,8 +9,9 @@ use ratzilla::ratatui::{
 };
 
 pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
+    let theme = &state.current_theme;
     let is_focused = state.focus == Pane::Editor;
-    let border_style = EditorTheme::border_style(state.vim_mode, is_focused);
+    let border_style = EditorTheme::border_style(theme, state.vim_mode, is_focused);
 
     let title = if let Some(filename) = &state.editor.current_file {
         let dirty_marker = if state.dirty { " [+]" } else { "" };
