@@ -83,5 +83,12 @@ Thumbs.db
 *.pid
 *.sock
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
 # Test artifacts
 test-scripts.sh

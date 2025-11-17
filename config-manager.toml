@@ -4,7 +4,7 @@
 # Global settings
 [settings]
 # Allowed file extensions for security (whitelist)
-allowed_extensions = ["conf", "toml", "txt", "sh", "fish", "rs", "json", "yaml", "yml", "ini", "env"]
+allowed_extensions = ["toml"]
 
 # Each file entry specifies:
 # - path: Absolute path to the file on the system
@@ -13,36 +13,19 @@ allowed_extensions = ["conf", "toml", "txt", "sh", "fish", "rs", "json", "yaml",
 # - readonly: Optional, if true the file cannot be edited
 # - theme: Optional, specify a custom theme variant for this file (e.g., "mocha", "latte")
 
+# Config-Manager -> config-manager.toml
 [[files]]
-path = "/etc/nginx/nginx.conf"
-name = "nginx.conf"
-description = "Nginx main configuration"
-# theme = "mocha"  # Optional: Uncomment to use a custom theme for this file
-
-[[files]]
-path = "/etc/docker/daemon.json"
-name = "docker-daemon.toml"
-description = "Docker daemon configuration"
-
-[[files]]
-path = "/etc/ssh/sshd_config"
-name = "sshd.conf"
-description = "SSH daemon configuration"
-readonly = true
-
-# Example: User configs
-[[files]]
-path = "/home/pl/.config/hypr/hyprland.conf"
-name = "hyprland.conf"
-description = "Hyprland configuration"
+path = "/data/code/devel/git.repos/configmanager-rs/config-manager.toml"
+name = "config-manager.toml"
+description = "Config Manager Main config File"
 
 # Directory scanning example
 # Scans a directory recursively and includes files matching specific types
 [[directories]]
-path = "~/.config/hypr"
-name = "hypr"
+path = "/data/code/devel/git.repos/configmanager-rs"
+name = "config-manager"
 depth = 3
-types = ["conf", "txt", "sh"]
-description = "Hyprland config directory"
+types = ["toml"]
+description = "Config Manager Main Dir"
 
 # You can add more files and directories here!
