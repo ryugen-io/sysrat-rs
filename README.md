@@ -1,68 +1,187 @@
-# sysrat
+# sysrat - codebase
 
-**sysrat** is a full-stack web-based configuration management system written in Rust.
-
-- **Backend**: 🖥️ Rust + Axum (async web framework)
-- **Frontend**: 📊 WASM + Ratzilla (terminal UI in the browser)
-- **Features**: Configuration file management, Docker container management
-
-ℹ️ **Last Updated**: 2025-11-18 (`44ff12a`)
-
-## 🔨 Tech Stack
-
-**Rust Edition 2024**
-
-- **Backend**: 🖥️ Axum v0.7
-- **Frontend**: 📊 Ratzilla v0.2 (Ratatui-based WASM TUI)
-- **Build**: 🔨 Trunk (WASM bundler), Cargo (Rust toolchain)
-
-## ✨ Features
-
-### Status Line System
-
-- 🎯 **Modular component system** with 13 component types
-- 🎨 **TOML-configurable** (built-in + XDG user override)
-- 📦 **Split components** (state.rs, build.rs, text.rs) - all under 90 LOC
-- 🎛️ **Per-pane configuration** (Menu shows only build info in 1 line)
-- 🏷️ **Themed build output** with `[statusline]` tag
-- ✅ **All checks passed** (clippy -D warnings, fmt, test, audit)
-
-## 🚀 Management Scripts
-
-- 📄 [rebuild.py](rebuild.py) - Build and deploy (backend + frontend)
-- 📄 [start.py](start.py) - Start the sysrat server
-- 📄 [status.py](status.py) - Check server status and stats
-- 📄 [stop.py](stop.py) - Stop the sysrat server
-
-## 📄 Configuration
-
-- 📄 [CLAUDE.md](CLAUDE.md) - Developer documentation and AI assistant guide
-- 📄 [justfile](justfile) - Task runner commands
-- 📄 [sys/env/.env.example](sys/env/.env.example) - Environment configuration template
-- 📄 [sysrat.toml](sysrat.toml) - Application configuration
-
-## 📁 Project Structure
-
-- 📁 `frontend/` - WASM-based TUI frontend (Ratzilla)
-- 📁 `server/` - Backend API server (Rust + Axum)
-
-## Quick Start
-
-```bash
-# Build and start server
-./rebuild.py
-
-# Check status
-./status.py
-
-# Stop server
-./stop.py
 ```
-
-## Access
-
-Once started, access the web interface at: **http://localhost:3000**
-
-## Documentation
-
-See [CLAUDE.md](CLAUDE.md) for comprehensive developer documentation.
+sysrat-rs/
+├── .claude/
+│   └── settings.local.json
+├── .github/
+│   ├── skips/
+│   │   └── .skip.update-readme.example
+│   └── workflows/
+│       ├── scripts/
+│       │   ├── ci-lines.sh
+│       │   ├── ci-logger.sh
+│       │   └── update_readme.py
+│       ├── check-skip.yml
+│       └── update-readme.yml
+├── frontend/
+│   ├── assets/
+│   │   ├── menu-text.ascii
+│   │   └── sysrat.ascii
+│   ├── build_helpers/
+│   │   ├── ascii.rs
+│   │   ├── date.rs
+│   │   ├── hash.rs
+│   │   ├── keybinds.rs
+│   │   ├── mod.rs
+│   │   ├── statusline.rs
+│   │   ├── theme.rs
+│   │   └── version.rs
+│   ├── src/
+│   │   ├── api/
+│   │   │   ├── configs.rs
+│   │   │   ├── containers.rs
+│   │   │   ├── mod.rs
+│   │   │   └── types.rs
+│   │   ├── events/
+│   │   │   ├── container_list/
+│   │   │   │   ├── actions.rs
+│   │   │   │   ├── details.rs
+│   │   │   │   ├── mod.rs
+│   │   │   │   └── navigation.rs
+│   │   │   ├── editor/
+│   │   │   │   ├── normal_mode/
+│   │   │   │   │   ├── editing.rs
+│   │   │   │   │   ├── insert_commands.rs
+│   │   │   │   │   ├── mod.rs
+│   │   │   │   │   └── navigation.rs
+│   │   │   │   ├── input.rs
+│   │   │   │   ├── insert_mode.rs
+│   │   │   │   └── mod.rs
+│   │   │   ├── file_list.rs
+│   │   │   ├── menu.rs
+│   │   │   └── mod.rs
+│   │   ├── keybinds/
+│   │   │   ├── help_text.rs
+│   │   │   ├── mod.rs
+│   │   │   └── types.rs
+│   │   ├── state/
+│   │   │   ├── refresh/
+│   │   │   │   ├── cache.rs
+│   │   │   │   ├── container_list.rs
+│   │   │   │   ├── file_list.rs
+│   │   │   │   └── mod.rs
+│   │   │   ├── app.rs
+│   │   │   ├── container_list.rs
+│   │   │   ├── editor.rs
+│   │   │   ├── file_list.rs
+│   │   │   ├── menu.rs
+│   │   │   ├── mod.rs
+│   │   │   ├── pane.rs
+│   │   │   └── status_helper.rs
+│   │   ├── storage/
+│   │   │   ├── generic.rs
+│   │   │   ├── local.rs
+│   │   │   ├── mod.rs
+│   │   │   └── types.rs
+│   │   ├── theme/
+│   │   │   ├── builder.rs
+│   │   │   ├── container_list.rs
+│   │   │   ├── editor.rs
+│   │   │   ├── file_list.rs
+│   │   │   ├── loader.rs
+│   │   │   ├── menu.rs
+│   │   │   ├── mod.rs
+│   │   │   ├── status_line.rs
+│   │   │   └── types.rs
+│   │   ├── ui/
+│   │   │   ├── container_details/
+│   │   │   │   ├── basic.rs
+│   │   │   │   ├── config.rs
+│   │   │   │   ├── mod.rs
+│   │   │   │   ├── network.rs
+│   │   │   │   └── storage.rs
+│   │   │   ├── status_line/
+│   │   │   │   ├── components/
+│   │   │   │   │   ├── build.rs
+│   │   │   │   │   ├── mod.rs
+│   │   │   │   │   ├── state.rs
+│   │   │   │   │   └── text.rs
+│   │   │   │   ├── config.rs
+│   │   │   │   └── mod.rs
+│   │   │   ├── container_list.rs
+│   │   │   ├── editor.rs
+│   │   │   ├── file_list.rs
+│   │   │   ├── menu.rs
+│   │   │   └── mod.rs
+│   │   ├── utils/
+│   │   │   ├── error.rs
+│   │   │   └── mod.rs
+│   │   └── lib.rs
+│   ├── themes/
+│   │   ├── frappe.toml
+│   │   ├── latte.toml
+│   │   ├── macchiato.toml
+│   │   └── mocha.toml
+│   ├── build.rs
+│   ├── Cargo.toml
+│   ├── index.html
+│   └── keybinds.toml
+├── server/
+│   ├── src/
+│   │   ├── config/
+│   │   │   ├── app_config.rs
+│   │   │   ├── mod.rs
+│   │   │   ├── models.rs
+│   │   │   └── scanner.rs
+│   │   ├── routes/
+│   │   │   ├── configs/
+│   │   │   │   ├── handlers.rs
+│   │   │   │   ├── mod.rs
+│   │   │   │   └── validation.rs
+│   │   │   ├── containers/
+│   │   │   │   ├── parser/
+│   │   │   │   │   ├── basic.rs
+│   │   │   │   │   ├── config.rs
+│   │   │   │   │   ├── mod.rs
+│   │   │   │   │   ├── network.rs
+│   │   │   │   │   └── storage.rs
+│   │   │   │   ├── actions.rs
+│   │   │   │   ├── details.rs
+│   │   │   │   ├── handlers.rs
+│   │   │   │   └── mod.rs
+│   │   │   ├── mod.rs
+│   │   │   └── types.rs
+│   │   ├── main.rs
+│   │   └── version.rs
+│   └── Cargo.toml
+├── static/
+├── sys/
+│   ├── env/
+│   │   └── .env.example
+│   ├── layout/
+│   │   └── statusline.toml
+│   ├── rust/
+│   │   ├── audit.py
+│   │   ├── check.py
+│   │   ├── clean.py
+│   │   ├── clippy.py
+│   │   ├── rustfmt.py
+│   │   └── test_rust.py
+│   ├── theme/
+│   │   ├── theme.py
+│   │   └── theme.toml
+│   └── utils/
+│       ├── cleanup_backups.py
+│       ├── fix_nerdfonts.py
+│       ├── lines.py
+│       ├── pyclean.py
+│       ├── pycompile.py
+│       ├── pylint.py
+│       ├── remove_emojis.py
+│       ├── venv.py
+│       └── xdg_paths.py
+├── .env.example
+├── .skip-ci
+├── Cargo.lock
+├── Cargo.toml
+├── CLAUDE.md
+├── deny.toml
+├── justfile
+├── README.md
+├── rebuild.py
+├── start.py
+├── status.py
+├── stop.py
+└── sysrat.toml
+```

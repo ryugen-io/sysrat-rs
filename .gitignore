@@ -19,6 +19,7 @@
 .DS_Store
 
 # Editor backups
+*.backup
 *.backup-*
 
 # Environment & Secrets

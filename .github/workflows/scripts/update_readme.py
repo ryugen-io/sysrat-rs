@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 """
-README Generator for sysrat - Lists user-facing files and directories
+README Generator for sysrat - Generates a tree view of the codebase
 """
 
 import sys
-import tomllib
-import subprocess
-from datetime import datetime
 from pathlib import Path
 
 # Add sys/theme to path for central theming
@@ -15,254 +12,130 @@ REPO_ROOT = SCRIPT_DIR.parent.parent.parent  # Go up 3 levels: scripts/ -> workf
 sys.path.insert(0, str(REPO_ROOT / 'sys' / 'theme'))
 
 # Import central theme
-from theme import Colors, Icons, log_success
+from theme import log_success
 
 
-def get_git_info() -> dict:
-    """Get git hash and build date."""
-    info = {}
+# Directories and files to ignore
+IGNORE_DIRS = {
+    '.git', 'target', 'node_modules', 'dist', '__pycache__',
+    '.mypy_cache', '.pytest_cache', '.ruff_cache', '.trunk',
+    '.venv', 'venv', '.idea', '.vscode', '.cache'
+}
 
-    # Get current git hash (short)
+IGNORE_FILES = {
+    '.DS_Store', 'Thumbs.db', '.gitkeep', '*.pyc', '*.pyo',
+    '*.swp', '*.swo', '*~', '.server.pid', 'server.log',
+    '.gitignore', '.env', '.env.dev'
+}
+
+# File extensions to show (empty = show all)
+SHOW_EXTENSIONS = set()  # Empty means show all files
+
+
+def should_ignore(path: Path) -> bool:
+    """Check if a path should be ignored."""
+    # Ignore directories
+    if path.is_dir() and path.name in IGNORE_DIRS:
+        return True
+
+    # Ignore backup files
+    if path.name.endswith('.backup') or '.backup-' in path.name:
+        return True
+
+    # Ignore specific files
+    if path.name in IGNORE_FILES:
+        return True
+
+    # Ignore pattern matching (e.g., *.pyc)
+    for pattern in IGNORE_FILES:
+        if '*' in pattern:
+            ext = pattern.replace('*', '')
+            if path.name.endswith(ext):
+                return True
+
+    return False
+
+
+def generate_tree(directory: Path, prefix: str = "", is_last: bool = True, max_depth: int = -1, current_depth: int = 0) -> list:
+    """
+    Generate a tree structure for a directory.
+
+    Args:
+        directory: Path to directory to scan
+        prefix: Current line prefix for indentation
+        is_last: Whether this is the last item in current level
+        max_depth: Maximum depth to recurse (-1 for unlimited)
+        current_depth: Current recursion depth
+
+    Returns:
+        List of formatted tree lines
+    """
+    lines = []
+
+    # Check depth limit
+    if max_depth != -1 and current_depth >= max_depth:
+        return lines
+
+    # Get all items in directory
     try:
-        result = subprocess.run(
-            ['git', 'rev-parse', '--short', 'HEAD'],
-            cwd=REPO_ROOT,
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        info['hash'] = result.stdout.strip()
-    except Exception:
-        info['hash'] = 'unknown'
+        items = sorted(directory.iterdir(), key=lambda x: (not x.is_dir(), x.name.lower()))
+    except PermissionError:
+        return lines
 
-    # Get current date
-    info['date'] = datetime.now().strftime('%Y-%m-%d')
+    # Filter out ignored items
+    items = [item for item in items if not should_ignore(item)]
 
-    return info
+    for index, item in enumerate(items):
+        is_last_item = index == len(items) - 1
 
+        # Choose the right box-drawing characters
+        if is_last_item:
+            current_prefix = "└── "
+            extension = "    "
+        else:
+            current_prefix = "├── "
+            extension = "│   "
 
-def extract_versions() -> dict:
-    """Extract dependency versions from Cargo.toml files."""
-    versions = {}
+        # Format item name
+        if item.is_dir():
+            item_name = f"{item.name}/"
+        else:
+            item_name = item.name
 
-    # Read workspace Cargo.toml for edition
-    workspace_toml = REPO_ROOT / 'Cargo.toml'
-    if workspace_toml.exists():
-        try:
-            with open(workspace_toml, 'rb') as f:
-                data = tomllib.load(f)
-            if 'workspace' in data and 'package' in data['workspace']:
-                edition = data['workspace']['package'].get('edition', 'unknown')
-                versions['edition'] = edition
-        except Exception:
-            versions['edition'] = 'unknown'
+        # Add line
+        lines.append(f"{prefix}{current_prefix}{item_name}")
 
-    # Read server Cargo.toml for Axum version
-    server_toml = REPO_ROOT / 'server' / 'Cargo.toml'
-    if server_toml.exists():
-        try:
-            with open(server_toml, 'rb') as f:
-                data = tomllib.load(f)
-            if 'dependencies' in data:
-                axum = data['dependencies'].get('axum', 'unknown')
-                if isinstance(axum, dict):
-                    axum = axum.get('version', 'unknown')
-                versions['axum'] = axum
-        except Exception:
-            versions['axum'] = 'unknown'
+        # Recurse into directories
+        if item.is_dir():
+            lines.extend(generate_tree(
+                item,
+                prefix + extension,
+                is_last_item,
+                max_depth,
+                current_depth + 1
+            ))
 
-    # Read frontend Cargo.toml for Ratzilla and Ratatui versions
-    frontend_toml = REPO_ROOT / 'frontend' / 'Cargo.toml'
-    if frontend_toml.exists():
-        try:
-            with open(frontend_toml, 'rb') as f:
-                data = tomllib.load(f)
-            if 'dependencies' in data:
-                # Ratzilla
-                ratzilla = data['dependencies'].get('ratzilla', 'unknown')
-                if isinstance(ratzilla, dict):
-                    ratzilla = ratzilla.get('version', 'unknown')
-                versions['ratzilla'] = ratzilla
-
-                # Ratatui (via tui-textarea dependency)
-                # We get ratatui version indirectly, or hardcode known version
-                # For simplicity, we'll note it's via ratzilla
-                versions['ratatui'] = 'via ratzilla'
-        except Exception:
-            versions['ratzilla'] = 'unknown'
-            versions['ratatui'] = 'unknown'
-
-    return versions
+    return lines
 
 
-def get_project_files() -> dict:
-    """Get relevant project files organized by category."""
+def generate_readme() -> str:
+    """Generate README with tree view of codebase."""
+    readme = "# sysrat - codebase\n\n"
+    readme += "```\n"
+    readme += "sysrat-rs/\n"
 
-    # User-facing management scripts
-    management_scripts = []
-    for script in ['start.py', 'stop.py', 'status.py', 'rebuild.py']:
-        script_path = REPO_ROOT / script
-        if script_path.exists():
-            management_scripts.append(script)
+    # Generate tree (no depth limit)
+    tree_lines = generate_tree(REPO_ROOT, max_depth=-1)
+    readme += "\n".join(tree_lines)
 
-    # Configuration files
-    config_files = []
-    for config in ['sysrat.toml', 'sys/env/.env.example', 'justfile', 'CLAUDE.md']:
-        config_path = REPO_ROOT / config
-        if config_path.exists():
-            config_files.append(config)
-
-    # Project directories (just mention them, don't scan contents)
-    project_dirs = []
-    for directory in ['server', 'frontend']:
-        dir_path = REPO_ROOT / directory
-        if dir_path.exists() and dir_path.is_dir():
-            project_dirs.append(directory)
-
-    return {
-        'management_scripts': sorted(management_scripts),
-        'config_files': sorted(config_files),
-        'project_dirs': sorted(project_dirs)
-    }
-
-
-def get_description(filename: str) -> str:
-    """Get description for a file."""
-    descriptions = {
-        # Management scripts
-        'start.py': 'Start the sysrat server',
-        'stop.py': 'Stop the sysrat server',
-        'status.py': 'Check server status and stats',
-        'rebuild.py': 'Build and deploy (backend + frontend)',
-
-        # Config files
-        'sysrat.toml': 'Application configuration',
-        'sys/env/.env.example': 'Environment configuration template',
-        'justfile': 'Task runner commands',
-        'CLAUDE.md': 'Developer documentation and AI assistant guide',
-
-        # Directories
-        'server': 'Backend API server (Rust + Axum)',
-        'frontend': 'WASM-based TUI frontend (Ratzilla)',
-    }
-
-    return descriptions.get(filename, '')
-
-
-def generate_readme(files: dict, versions: dict, git_info: dict) -> str:
-    """Generate README with file links organized by category."""
-
-    # Standard emojis (work in all browsers)
-    ROCKET = '🚀'
-    SERVER = '🖥️'
-    HAMMER = '🔨'
-    FOLDER = '📁'
-    FILE = '📄'
-    CHART = '📊'
-    INFO = 'ℹ️'
-
-    # Feature emojis
-    SPARKLES = '✨'
-    TARGET = '🎯'
-    PALETTE = '🎨'
-    PACKAGE = '📦'
-    CONTROLS = '🎛️'
-    TAG = '🏷️'
-    CHECK = '✅'
-
-    readme = "# sysrat\n\n"
-    readme += "**sysrat** is a full-stack web-based configuration management system written in Rust.\n\n"
-    readme += f"- **Backend**: {SERVER} Rust + Axum (async web framework)\n"
-    readme += f"- **Frontend**: {CHART} WASM + Ratzilla (terminal UI in the browser)\n"
-    readme += "- **Features**: Configuration file management, Docker container management\n\n"
-
-    # Build info
-    build_date = git_info.get('date', 'unknown')
-    build_hash = git_info.get('hash', 'unknown')
-    readme += f"{INFO} **Last Updated**: {build_date} (`{build_hash}`)\n\n"
-
-    # Tech Stack with versions
-    readme += f"## {HAMMER} Tech Stack\n\n"
-    edition = versions.get('edition', 'unknown')
-    axum = versions.get('axum', 'unknown')
-    ratzilla = versions.get('ratzilla', 'unknown')
-
-    readme += f"**Rust Edition {edition}**\n\n"
-    readme += f"- **Backend**: {SERVER} Axum v{axum}\n"
-    readme += f"- **Frontend**: {CHART} Ratzilla v{ratzilla} (Ratatui-based WASM TUI)\n"
-    readme += f"- **Build**: {HAMMER} Trunk (WASM bundler), Cargo (Rust toolchain)\n\n"
-
-    # Features section
-    readme += f"## {SPARKLES} Features\n\n"
-    readme += "### Status Line System\n\n"
-    readme += f"- {TARGET} **Modular component system** with 13 component types\n"
-    readme += f"- {PALETTE} **TOML-configurable** (built-in + XDG user override)\n"
-    readme += f"- {PACKAGE} **Split components** (state.rs, build.rs, text.rs) - all under 90 LOC\n"
-    readme += f"- {CONTROLS} **Per-pane configuration** (Menu shows only build info in 1 line)\n"
-    readme += f"- {TAG} **Themed build output** with `[statusline]` tag\n"
-    readme += f"- {CHECK} **All checks passed** (clippy -D warnings, fmt, test, audit)\n\n"
-
-    # Management Scripts
-    if files['management_scripts']:
-        readme += f"## {ROCKET} Management Scripts\n\n"
-        for script in files['management_scripts']:
-            desc = get_description(script)
-            readme += f"- {FILE} [{script}]({script})"
-            if desc:
-                readme += f" - {desc}"
-            readme += "\n"
-        readme += "\n"
-
-    # Configuration Files
-    if files['config_files']:
-        readme += f"## {FILE} Configuration\n\n"
-        for config in files['config_files']:
-            desc = get_description(config)
-            readme += f"- {FILE} [{config}]({config})"
-            if desc:
-                readme += f" - {desc}"
-            readme += "\n"
-        readme += "\n"
-
-    # Project Structure
-    if files['project_dirs']:
-        readme += f"## {FOLDER} Project Structure\n\n"
-        for directory in files['project_dirs']:
-            desc = get_description(directory)
-            readme += f"- {FOLDER} `{directory}/`"
-            if desc:
-                readme += f" - {desc}"
-            readme += "\n"
-        readme += "\n"
-
-    # Quick Start
-    readme += "## Quick Start\n\n"
-    readme += "```bash\n"
-    readme += "# Build and start server\n"
-    readme += "./rebuild.py\n\n"
-    readme += "# Check status\n"
-    readme += "./status.py\n\n"
-    readme += "# Stop server\n"
-    readme += "./stop.py\n"
-    readme += "```\n\n"
-
-    # Access
-    readme += "## Access\n\n"
-    readme += "Once started, access the web interface at: **http://localhost:3000**\n\n"
-
-    # Documentation
-    readme += "## Documentation\n\n"
-    readme += "See [CLAUDE.md](CLAUDE.md) for comprehensive developer documentation.\n"
+    readme += "\n```\n"
 
     return readme
 
 
 def main():
     """Main function."""
-    git_info = get_git_info()
-    versions = extract_versions()
-    files = get_project_files()
-    readme_content = generate_readme(files, versions, git_info)
+    readme_content = generate_readme()
 
     # Write README
     readme_path = REPO_ROOT / 'README.md'
@@ -270,12 +143,10 @@ def main():
     with open(readme_path, 'w') as f:
         f.write(readme_content)
 
-    # Count total items
-    total_items = (len(files['management_scripts']) +
-                   len(files['config_files']) +
-                   len(files['project_dirs']))
+    # Count total lines
+    total_lines = readme_content.count('\n')
 
-    log_success(f"README.md updated with {total_items} items")
+    log_success(f"README.md updated with tree view ({total_lines} lines)")
 
 
 if __name__ == '__main__':
