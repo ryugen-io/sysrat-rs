@@ -19,7 +19,7 @@ pub fn render_row_with_spacing(
     let mut last_was_content = false;
     let mut is_first_component = true;
 
-    for (idx, component_config) in row_config.components.iter().enumerate() {
+    for component_config in &row_config.components {
         if let Some(span) = components::render_component(component_config, state, theme) {
             let is_spacing = is_spacing_component(component_config);
             let is_closing_paren = is_closing_parenthesis(component_config);
