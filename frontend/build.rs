@@ -36,10 +36,10 @@ fn main() {
     // Dynamically track all theme files
     if let Ok(entries) = std::fs::read_dir("themes") {
         for entry in entries.flatten() {
-            if let Some(path) = entry.path().to_str() {
-                if path.ends_with(".toml") {
-                    println!("cargo:rerun-if-changed={}", path);
-                }
+            if let Some(path) = entry.path().to_str()
+                && path.ends_with(".toml")
+            {
+                println!("cargo:rerun-if-changed={}", path);
             }
         }
     }

@@ -87,7 +87,7 @@ pub fn handle_key_event(state: Rc<RefCell<AppState>>, key_event: KeyEvent) {
         let current_name =
             crate::theme::load_theme_preference().unwrap_or_else(|| "mocha".to_string());
         let next_name = crate::theme::next_theme_name(&current_name);
-        state_mut.set_theme(next_name);
+        state_mut.set_theme(&next_name);
         return;
     }
 

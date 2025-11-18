@@ -1,27 +1,28 @@
 use super::types::ThemeConfig;
 use crate::storage;
 
-/// Embedded default themes (Catppuccin variants)
-const THEME_MOCHA: &str = include_str!("../../themes/mocha.toml");
-const THEME_LATTE: &str = include_str!("../../themes/latte.toml");
-const THEME_FRAPPE: &str = include_str!("../../themes/frappe.toml");
-const THEME_MACCHIATO: &str = include_str!("../../themes/macchiato.toml");
-
-/// Available theme names (defaults + user custom themes scanned at build time)
-const THEME_NAMES: &[&str] = &["mocha", "latte", "frappe", "macchiato"];
+/// Available theme names (dynamically scanned at build time from frontend/themes/)
+const THEME_NAMES_STR: &str = env!("THEME_NAMES");
 
 /// Get list of available theme names
-pub fn available_themes() -> &'static [&'static str] {
-    THEME_NAMES
+pub fn available_themes() -> Vec<&'static str> {
+    THEME_NAMES_STR.split(',').collect()
 }
 
 /// Load theme by name from embedded themes
 pub fn load_theme_by_name(name: &str) -> Result<ThemeConfig, String> {
+    // Load the theme content at compile time using include_str!
+    // All themes are embedded at build time
     let toml_content = match name {
-        "mocha" => THEME_MOCHA,
-        "latte" => THEME_LATTE,
-        "frappe" => THEME_FRAPPE,
-        "macchiato" => THEME_MACCHIATO,
+        "mocha" => include_str!("../../themes/mocha.toml"),
+        "latte" => include_str!("../../themes/latte.toml"),
+        "frappe" => include_str!("../../themes/frappe.toml"),
+        "macchiato" => include_str!("../../themes/macchiato.toml"),
+        "dracula" => include_str!("../../themes/dracula.toml"),
+        "gruvbox-dark" => include_str!("../../themes/gruvbox-dark.toml"),
+        "gruvbox-light" => include_str!("../../themes/gruvbox-light.toml"),
+        "cyberpunk" => include_str!("../../themes/cyberpunk.toml"),
+        "synthwave" => include_str!("../../themes/synthwave.toml"),
         _ => return Err(format!("Unknown theme: {}", name)),
     };
 
@@ -56,15 +57,15 @@ pub fn load_current_theme() -> ThemeConfig {
 }
 
 /// Get next theme name (for cycling)
-pub fn next_theme_name(current: &str) -> &'static str {
+pub fn next_theme_name(current: &str) -> String {
     let themes = available_themes();
     if themes.is_empty() {
-        return "mocha";
+        return "mocha".to_string();
     }
 
     if let Some(idx) = themes.iter().position(|&t| t == current) {
-        themes[(idx + 1) % themes.len()]
+        themes[(idx + 1) % themes.len()].to_string()
     } else {
-        themes[0]
+        themes[0].to_string()
     }
 }
