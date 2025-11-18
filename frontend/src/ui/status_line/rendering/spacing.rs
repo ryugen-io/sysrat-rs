@@ -24,7 +24,8 @@ pub fn render_row_with_spacing(
             let is_spacing = is_spacing_component(component_config);
 
             // Add leading space for first content component (alignment)
-            if is_first_component && !is_spacing {
+            // BUT: Don't add if the component already starts with a space
+            if is_first_component && !is_spacing && !starts_with_space(component_config) {
                 spans.push(Span::raw(" "));
                 is_first_component = false;
             }
@@ -37,6 +38,9 @@ pub fn render_row_with_spacing(
 
             spans.push(span);
             last_was_content = !is_spacing;
+            if is_first_component {
+                is_first_component = false;
+            }
         }
     }
 
@@ -49,6 +53,14 @@ fn is_spacing_component(component: &ComponentConfig) -> bool {
         ComponentConfig::Spacer => true,
         ComponentConfig::Separator { .. } => true,
         ComponentConfig::Text { value, .. } => value.trim().is_empty(),
+        _ => false,
+    }
+}
+
+/// Check if a text component starts with a space (already has leading spacing).
+fn starts_with_space(component: &ComponentConfig) -> bool {
+    match component {
+        ComponentConfig::Text { value, .. } => value.starts_with(' '),
         _ => false,
     }
 }
