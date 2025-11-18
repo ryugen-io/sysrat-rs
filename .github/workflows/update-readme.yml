@@ -4,22 +4,6 @@ on:
   push:
     branches:
       - master
-    paths:
-      # Only trigger on new management scripts or config changes
-      - 'sysrat.toml'
-      - 'sys/env/.env.example'
-      - 'justfile'
-      - 'CLAUDE.md'
-      - '.github/skips/**'
-      - '*.py'
-      # Don't trigger on README.md or workflow changes to prevent loops
-      - '!README.md'
-      - '!.github/workflows/update-readme.yml'
-      # Exclude all sys/ subdirectories (build/dev tools)
-      - '!sys/**'
-      # Don't trigger on code changes (only new files matter)
-      - '!server/**'
-      - '!frontend/**'
 
 jobs:
   validation:
