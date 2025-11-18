@@ -4,7 +4,7 @@
 sysrat-rs/
 ├── .github/
 │   ├── logs/
-│   │   └── 20251118-140653-workflow.log
+│   │   └── 20251118-140747-workflow.log
 │   ├── skips/
 │   │   └── .skip.update-readme.example
 │   └── workflows/
@@ -123,7 +123,6 @@ sysrat-rs/
 │   ├── Cargo.toml
 │   ├── index.html
 │   └── keybinds.toml
-├── ratatui/
 ├── server/
 │   ├── src/
 │   │   ├── config/
