@@ -2,9 +2,9 @@
 
 ```
 sysrat-rs/
-├── .claude/
-│   └── settings.local.json
 ├── .github/
+│   ├── logs/
+│   │   └── 20251118-120938-workflow.log
 │   ├── skips/
 │   │   └── .skip.update-readme.example
 │   └── workflows/
@@ -145,7 +145,6 @@ sysrat-rs/
 │   │   ├── main.rs
 │   │   └── version.rs
 │   └── Cargo.toml
-├── static/
 ├── sys/
 │   ├── env/
 │   │   └── .env.example
