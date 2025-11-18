@@ -42,12 +42,12 @@ pub fn render_modified_indicator(state: &AppState, theme: &ThemeConfig) -> Optio
 
 pub fn render_status_message(state: &AppState, theme: &ThemeConfig) -> Option<Span<'static>> {
     if let Some(ref msg) = state.status_message {
-        let style = if msg.starts_with(" [ERROR") {
+        let style = if msg.starts_with("[ERROR") {
             StatusLineTheme::error_message_style(theme)
         } else {
             StatusLineTheme::status_message_style(theme)
         };
-        Some(Span::styled(msg.clone(), style))
+        Some(Span::styled(format!(" {}", msg), style))
     } else {
         None
     }
