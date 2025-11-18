@@ -1,21 +1,47 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link data-trunk rel="rust" data-wasm-opt="z"/>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="sysrat - Web-based configuration management system with terminal UI"
+    />
+    <meta name="author" content="sysrat" />
+    <meta name="theme-color" content="#1e1e2e" />
+    <link data-trunk rel="rust" data-wasm-opt="z" />
     <title>sysrat</title>
     <style>
-        body {
-            margin: 0;
-            width: 100%;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        /* Font styles are injected dynamically from theme configuration */
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      pre {
+        max-width: 100vw;
+        max-height: 100vh;
+        overflow: hidden;
+        user-select: text;
+      }
+      /* Font styles are injected dynamically from theme configuration */
     </style>
-</head>
-<body></body>
+  </head>
+  <body>
+    <noscript>
+      <div style="text-align: center; padding: 2rem; font-family: monospace">
+        <h1>JavaScript Required</h1>
+        <p>This application requires JavaScript to run.</p>
+        <p>Please enable JavaScript in your browser settings.</p>
+      </div>
+    </noscript>
+  </body>
 </html>

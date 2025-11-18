@@ -29,8 +29,8 @@ dim = "subtext0"
 
 [font]
 # Font configuration
-family = "Fira Code"
+family = "FiraCode Nerd Font"
 fallback = "monospace"
 size = 16
 weight = 400
-cdn_url = "https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/fira_code.min.css"
+cdn_url = "https://cdn.jsdelivr.net/gh/mshaugh/nerdfont-webfonts@v3.3.0/build/firacode-nerd-font.css"

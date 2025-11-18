@@ -1,8 +1,13 @@
 [workspace]
 members = ["frontend", "server"]
+exclude = ["ratatui"]
 resolver = "2"
 
 [workspace.package]
 #name = "sysrat"
 version = "0.1.0"
 edition = "2024"
+
+# PATCH: Use locally patched ratatui with unicode-truncate 2.0 for Nerd Font fix
+[patch.crates-io]
+ratatui = { path = "ratatui" }

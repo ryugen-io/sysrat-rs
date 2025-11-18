@@ -3,7 +3,7 @@
 
 [colors]
 # Base colors
-lavender = [114, 135, 253]  # Primary accent
+lavender = [115, 135, 253]  # Primary accent
 mauve = [136, 57, 239]      # Purple/Magenta
 sapphire = [32, 159, 181]   # Blue
 green = [64, 160, 43]       # Green
@@ -29,8 +29,8 @@ dim = "subtext0"
 
 [font]
 # Font configuration
-family = "Fira Code"
+family = "FiraCode Nerd Font"
 fallback = "monospace"
 size = 16
 weight = 400
-cdn_url = "https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/fira_code.min.css"
+cdn_url = "https://cdn.jsdelivr.net/gh/mshaugh/nerdfont-webfonts@v3.3.0/build/firacode-nerd-font.css"
