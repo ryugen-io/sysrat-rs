@@ -1,0 +1,39 @@
+# Gruvbox Dark Theme Configuration
+# Retro groove color scheme with warm colors
+
+[colors]
+# Base colors (Gruvbox Dark Palette)
+orange = [254, 128, 25]     # Primary accent (bright orange)
+purple = [211, 134, 155]    # Purple
+blue = [131, 165, 152]      # Aqua/Blue
+green = [184, 187, 38]      # Green
+yellow = [250, 189, 47]     # Yellow
+red = [251, 73, 52]         # Red
+text = [235, 219, 178]      # Main text (fg1)
+gray = [168, 153, 132]      # Dimmed text (gray)
+selection = [80, 73, 69]    # Selection background (bg2)
+background = [40, 40, 40]   # Dark background (bg0)
+
+[semantic]
+# Semantic color mappings
+accent = "orange"
+selected = "yellow"
+modified = "orange"
+success = "green"
+error = "red"
+normal_mode = "blue"
+insert_mode = "purple"
+dim = "gray"
+
+[font]
+# Font configuration
+family = "FiraCode Nerd Font"
+fallback = "monospace"
+size = 16
+weight = 400
+cdn_url = "https://cdn.jsdelivr.net/gh/mshaugh/nerdfont-webfonts@v3.3.0/build/firacode-nerd-font.css"
+
+[icons]
+# Menu item icons
+config_files = "▪"
+container = "▪"

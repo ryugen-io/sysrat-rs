@@ -1,0 +1,40 @@
+# Cyberpunk Theme Configuration
+# Neon-inspired futuristic theme with vibrant colors
+
+[colors]
+# Base colors (Cyberpunk Neon Palette)
+neon_pink = [255, 16, 240]  # Hot pink accent
+neon_cyan = [0, 255, 255]   # Bright cyan
+neon_purple = [191, 0, 255] # Electric purple
+neon_green = [57, 255, 20]  # Neon green
+neon_yellow = [255, 231, 0] # Bright yellow
+neon_orange = [255, 128, 0] # Neon orange
+neon_red = [255, 0, 110]    # Hot red
+text = [230, 240, 255]      # Light blue-white text
+dim_text = [140, 150, 170]  # Dimmed cyan-gray
+selection = [60, 30, 80]    # Dark purple selection
+background = [15, 15, 25]   # Very dark blue-black
+
+[semantic]
+# Semantic color mappings
+accent = "neon_cyan"
+selected = "neon_pink"
+modified = "neon_orange"
+success = "neon_green"
+error = "neon_red"
+normal_mode = "neon_cyan"
+insert_mode = "neon_pink"
+dim = "dim_text"
+
+[font]
+# Font configuration
+family = "FiraCode Nerd Font"
+fallback = "monospace"
+size = 16
+weight = 400
+cdn_url = "https://cdn.jsdelivr.net/gh/mshaugh/nerdfont-webfonts@v3.3.0/build/firacode-nerd-font.css"
+
+[icons]
+# Menu item icons
+config_files = "▪"
+container = "▪"

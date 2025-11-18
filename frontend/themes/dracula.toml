@@ -1,0 +1,40 @@
+# Dracula Theme Configuration
+# Classic dark theme with vibrant colors
+
+[colors]
+# Base colors (Dracula Official Palette)
+purple = [189, 147, 249]    # Primary accent
+pink = [255, 121, 198]      # Magenta/Pink
+cyan = [139, 233, 253]      # Cyan
+green = [80, 250, 123]      # Green
+yellow = [241, 250, 140]    # Yellow
+orange = [255, 184, 108]    # Orange
+red = [255, 85, 85]         # Red
+text = [248, 248, 242]      # Main text (Foreground)
+comment = [98, 114, 164]    # Dimmed text (Comment)
+selection = [68, 71, 90]    # Selection background
+background = [40, 42, 54]   # Dark background
+
+[semantic]
+# Semantic color mappings
+accent = "purple"
+selected = "pink"
+modified = "orange"
+success = "green"
+error = "red"
+normal_mode = "cyan"
+insert_mode = "pink"
+dim = "comment"
+
+[font]
+# Font configuration
+family = "FiraCode Nerd Font"
+fallback = "monospace"
+size = 16
+weight = 400
+cdn_url = "https://cdn.jsdelivr.net/gh/mshaugh/nerdfont-webfonts@v3.3.0/build/firacode-nerd-font.css"
+
+[icons]
+# Menu item icons
+config_files = "▪"
+container = "▪"

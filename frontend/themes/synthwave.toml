@@ -1,0 +1,41 @@
+# Synthwave Theme Configuration
+# 80s retro-futuristic theme with sunset gradients
+
+[colors]
+# Base colors (Synthwave '84 Palette)
+hot_pink = [255, 29, 206]   # Vibrant pink
+purple = [180, 74, 192]     # Deep purple
+cyan = [46, 220, 229]       # Bright cyan
+blue = [34, 136, 255]       # Electric blue
+green = [114, 239, 195]     # Mint green
+yellow = [255, 213, 128]    # Warm yellow
+orange = [255, 120, 63]     # Sunset orange
+red = [254, 60, 91]         # Hot red
+text = [255, 255, 255]      # Pure white text
+dim_text = [181, 189, 207]  # Faded white-blue
+selection = [54, 38, 68]    # Dark purple selection
+background = [23, 20, 33]   # Very dark purple-black
+
+[semantic]
+# Semantic color mappings
+accent = "hot_pink"
+selected = "cyan"
+modified = "orange"
+success = "green"
+error = "red"
+normal_mode = "blue"
+insert_mode = "hot_pink"
+dim = "dim_text"
+
+[font]
+# Font configuration
+family = "FiraCode Nerd Font"
+fallback = "monospace"
+size = 16
+weight = 400
+cdn_url = "https://cdn.jsdelivr.net/gh/mshaugh/nerdfont-webfonts@v3.3.0/build/firacode-nerd-font.css"
+
+[icons]
+# Menu item icons
+config_files = "▪"
+container = "▪"
