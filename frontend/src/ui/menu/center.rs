@@ -27,7 +27,24 @@ pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
         MenuTheme::ascii_art_style(theme),
     )));
 
-    // Add menu items with Nerd Font icons
+    // Calculate max item length for padding (centered but aligned)
+    let max_len = state
+        .menu
+        .items
+        .iter()
+        .map(|item| {
+            let prefix = MenuTheme::selected_prefix(); // Use longest prefix
+            let icon = match item.as_str() {
+                "Config Files" => format!("{} ", theme.icons.config_files),
+                "Container" => format!("{} ", theme.icons.container),
+                _ => String::new(),
+            };
+            prefix.len() + icon.len() + item.len()
+        })
+        .max()
+        .unwrap_or(0);
+
+    // Add menu items with padding to align them
     for (i, item) in state.menu.items.iter().enumerate() {
         let is_selected = i == state.menu.selected_index;
 
@@ -43,15 +60,18 @@ pub fn render(f: &mut Frame, state: &AppState, area: Rect) {
             MenuTheme::normal_prefix()
         };
 
-        // Simple Unicode symbols (better browser compatibility than Nerd Fonts)
+        // Icons from theme configuration
         let icon = match item.as_str() {
-            "Config Files" => "□ ", // White square (U+25A1)
-            "Container" => "◆ ",    // Black diamond (U+25C6)
-            _ => "",
+            "Config Files" => format!("{} ", theme.icons.config_files),
+            "Container" => format!("{} ", theme.icons.container),
+            _ => String::new(),
         };
 
         let line_text = format!("{}{}{}", prefix, icon, item);
-        lines.push(Line::from(Span::styled(line_text, style)));
+        let padding = " ".repeat(max_len.saturating_sub(line_text.len()));
+        let padded_line = format!("{}{}", line_text, padding);
+
+        lines.push(Line::from(Span::styled(padded_line, style)));
     }
 
     let menu = Paragraph::new(lines).alignment(Alignment::Center).block(

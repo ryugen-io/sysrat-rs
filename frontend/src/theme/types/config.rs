@@ -1,6 +1,12 @@
 use ratzilla::ratatui::style::Color;
 use serde::Deserialize;
 
+use super::{
+    colors::{BaseColors, SemanticMappings},
+    font::{FontConfig, default_font_config},
+    icons::{IconConfig, default_icon_config},
+};
+
 /// Runtime theme configuration
 ///
 /// Represents a theme loaded at runtime from TOML.
@@ -13,59 +19,8 @@ pub struct ThemeConfig {
     pub semantic: SemanticMappings,
     #[serde(default = "default_font_config")]
     pub font: FontConfig,
-}
-
-/// Base RGB color definitions
-#[derive(Debug, Clone, Deserialize)]
-pub struct BaseColors {
-    pub lavender: [u8; 3],
-    pub mauve: [u8; 3],
-    pub sapphire: [u8; 3],
-    pub green: [u8; 3],
-    pub yellow: [u8; 3],
-    pub peach: [u8; 3],
-    pub red: [u8; 3],
-    pub text: [u8; 3],
-    pub subtext0: [u8; 3],
-    pub overlay1: [u8; 3],
-    pub surface1: [u8; 3],
-    pub mantle: [u8; 3],
-}
-
-/// Semantic color mappings to base colors
-#[derive(Debug, Clone, Deserialize)]
-pub struct SemanticMappings {
-    pub accent: String,
-    pub selected: String,
-    pub modified: String,
-    pub success: String,
-    pub error: String,
-    pub normal_mode: String,
-    pub insert_mode: String,
-    pub dim: String,
-}
-
-/// Font configuration for the theme
-#[derive(Debug, Clone, Deserialize)]
-pub struct FontConfig {
-    pub family: String,
-    pub fallback: String,
-    pub size: u32,
-    pub weight: u32,
-    pub cdn_url: Option<String>,
-}
-
-/// Default font configuration (Fira Code)
-fn default_font_config() -> FontConfig {
-    FontConfig {
-        family: "Fira Code".to_string(),
-        fallback: "monospace".to_string(),
-        size: 16,
-        weight: 400,
-        cdn_url: Some(
-            "https://cdnjs.cloudflare.com/ajax/libs/firacode/6.2.0/fira_code.min.css".to_string(),
-        ),
-    }
+    #[serde(default = "default_icon_config")]
+    pub icons: IconConfig,
 }
 
 impl ThemeConfig {

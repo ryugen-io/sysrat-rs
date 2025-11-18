@@ -55,7 +55,7 @@ pub use loader::{
     load_current_theme, load_theme_by_name, load_theme_preference, next_theme_name,
     save_theme_preference,
 };
-pub use types::{FontConfig, ThemeConfig};
+pub use types::{FontConfig, IconConfig, ThemeConfig};
 
 /// Common prefix for selected items in lists
 pub const SELECTED_PREFIX: &str = "> ";

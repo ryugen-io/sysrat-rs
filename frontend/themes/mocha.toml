@@ -34,3 +34,8 @@ fallback = "monospace"
 size = 16
 weight = 400
 cdn_url = "https://cdn.jsdelivr.net/gh/mshaugh/nerdfont-webfonts@v3.3.0/build/firacode-nerd-font.css"
+
+[icons]
+# Menu item icons (Unicode symbols or Nerd Font glyphs)
+config_files = "▪"  # Black small square (U+25AA)
+container = "▪"     # Black small square (U+25AA)
