@@ -38,7 +38,7 @@ rows = [
         { type = "filename" },
         { type = "modified_indicator" },
         { type = "status_message" },
-        { type = "separator", value = "| " },
+        { type = "separator", value = " | " },
         { type = "help_text" },
     ]},
     { components = [{ type = "spacer" }] },

@@ -32,11 +32,11 @@ pub fn render_filename(state: &AppState, theme: &ThemeConfig) -> Option<Span<'st
 pub fn render_modified_indicator(state: &AppState, theme: &ThemeConfig) -> Option<Span<'static>> {
     if state.dirty {
         Some(Span::styled(
-            " [modified] ",
+            " [modified]",
             StatusLineTheme::modified_style(theme),
         ))
     } else {
-        Some(Span::styled(" [OK] ", StatusLineTheme::ok_style(theme)))
+        Some(Span::styled(" [OK]", StatusLineTheme::ok_style(theme)))
     }
 }
 
