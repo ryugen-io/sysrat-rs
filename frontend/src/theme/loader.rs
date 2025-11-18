@@ -1,32 +1,53 @@
 use super::types::ThemeConfig;
 use crate::storage;
 
-/// Available theme names (dynamically scanned at build time from frontend/themes/)
-const THEME_NAMES_STR: &str = env!("THEME_NAMES");
-
 /// Get list of available theme names
 pub fn available_themes() -> Vec<&'static str> {
-    THEME_NAMES_STR.split(',').collect()
+    generated::THEME_NAMES.to_vec()
 }
 
 /// Load theme by name from embedded themes
 pub fn load_theme_by_name(name: &str) -> Result<ThemeConfig, String> {
-    // Load the theme content at compile time using include_str!
-    // All themes are embedded at build time
-    let toml_content = match name {
-        "mocha" => include_str!("../../themes/mocha.toml"),
-        "latte" => include_str!("../../themes/latte.toml"),
-        "frappe" => include_str!("../../themes/frappe.toml"),
-        "macchiato" => include_str!("../../themes/macchiato.toml"),
-        "dracula" => include_str!("../../themes/dracula.toml"),
-        "gruvbox-dark" => include_str!("../../themes/gruvbox-dark.toml"),
-        "gruvbox-light" => include_str!("../../themes/gruvbox-light.toml"),
-        "cyberpunk" => include_str!("../../themes/cyberpunk.toml"),
-        "synthwave" => include_str!("../../themes/synthwave.toml"),
-        _ => return Err(format!("Unknown theme: {}", name)),
-    };
+    // DEBUG: Uncomment for theme loading diagnostics
+    // web_sys::console::log_1(&wasm_bindgen::JsValue::from_str(&format!(
+    //     "[DEBUG] Available themes: {:?}",
+    //     generated::THEME_NAMES
+    // )));
+    // web_sys::console::log_1(&wasm_bindgen::JsValue::from_str(&format!(
+    //     "[DEBUG] Trying to load theme: '{}'",
+    //     name
+    // )));
+
+    // Load theme content from auto-generated code
+    // This is generated at build time by frontend/build_helpers/theme/generator.rs
+    let toml_content = generated::load_theme_content(name)?;
+
+    // DEBUG: Uncomment for theme content diagnostics
+    // web_sys::console::log_1(&wasm_bindgen::JsValue::from_str(&format!(
+    //     "[DEBUG] Successfully loaded theme content for '{}'",
+    //     name
+    // )));
+
+    // DEBUG: Uncomment for theme parsing diagnostics
+    // let parsed = parse_theme_toml(toml_content);
+    // match &parsed {
+    //     Ok(_) => web_sys::console::log_1(&wasm_bindgen::JsValue::from_str(&format!(
+    //         "[DEBUG] Successfully parsed theme '{}'",
+    //         name
+    //     ))),
+    //     Err(e) => web_sys::console::error_1(&wasm_bindgen::JsValue::from_str(&format!(
+    //         "[DEBUG] Failed to parse theme '{}': {}",
+    //         name, e
+    //     ))),
+    // }
+    // parsed
 
     parse_theme_toml(toml_content)
+}
+
+/// Auto-generated theme loader module
+mod generated {
+    include!(concat!(env!("OUT_DIR"), "/generated_theme_loader.rs"));
 }
 
 /// Parse theme from TOML string

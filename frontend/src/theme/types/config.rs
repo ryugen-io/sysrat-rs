@@ -26,21 +26,7 @@ pub struct ThemeConfig {
 impl ThemeConfig {
     /// Get base color by name
     fn get_base_color(&self, name: &str) -> Color {
-        let rgb = match name {
-            "lavender" => self.base.lavender,
-            "mauve" => self.base.mauve,
-            "sapphire" => self.base.sapphire,
-            "green" => self.base.green,
-            "yellow" => self.base.yellow,
-            "peach" => self.base.peach,
-            "red" => self.base.red,
-            "text" => self.base.text,
-            "subtext0" => self.base.subtext0,
-            "overlay1" => self.base.overlay1,
-            "surface1" => self.base.surface1,
-            "mantle" => self.base.mantle,
-            _ => self.base.text, // Fallback
-        };
+        let rgb = self.base.get(name);
         Color::Rgb(rgb[0], rgb[1], rgb[2])
     }
 
@@ -70,27 +56,15 @@ impl ThemeConfig {
         self.get_base_color(&self.semantic.dim)
     }
     pub fn text(&self) -> Color {
-        Color::Rgb(self.base.text[0], self.base.text[1], self.base.text[2])
+        self.get_base_color("text")
     }
     pub fn overlay1(&self) -> Color {
-        Color::Rgb(
-            self.base.overlay1[0],
-            self.base.overlay1[1],
-            self.base.overlay1[2],
-        )
+        self.get_base_color("overlay1")
     }
     pub fn mantle(&self) -> Color {
-        Color::Rgb(
-            self.base.mantle[0],
-            self.base.mantle[1],
-            self.base.mantle[2],
-        )
+        self.get_base_color("mantle")
     }
     pub fn surface1(&self) -> Color {
-        Color::Rgb(
-            self.base.surface1[0],
-            self.base.surface1[1],
-            self.base.surface1[2],
-        )
+        self.get_base_color("surface1")
     }
 }

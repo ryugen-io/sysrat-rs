@@ -83,21 +83,40 @@ impl AppState {
     }
 
     pub fn set_theme(&mut self, theme_name: &str) {
-        if let Ok(theme) = crate::theme::load_theme_by_name(theme_name) {
-            self.current_theme = theme;
-            crate::theme::save_theme_preference(theme_name);
+        // DEBUG: Uncomment for set_theme diagnostics
+        // web_sys::console::log_1(&wasm_bindgen::JsValue::from_str(&format!(
+        //     "[DEBUG] set_theme called with: '{}'",
+        //     theme_name
+        // )));
 
-            // Update DOM elements
-            if let Err(e) = crate::update_dom_for_theme(&self.current_theme) {
-                web_sys::console::error_1(&wasm_bindgen::JsValue::from_str(&format!(
-                    "Failed to update DOM for theme: {:?}",
-                    e
-                )));
+        match crate::theme::load_theme_by_name(theme_name) {
+            Ok(theme) => {
+                // DEBUG: Uncomment for successful theme load diagnostics
+                // web_sys::console::log_1(&wasm_bindgen::JsValue::from_str(&format!(
+                //     "[DEBUG] Theme '{}' loaded successfully in set_theme",
+                //     theme_name
+                // )));
+
+                self.current_theme = theme;
+                crate::theme::save_theme_preference(theme_name);
+
+                // Update DOM elements
+                if let Err(e) = crate::update_dom_for_theme(&self.current_theme) {
+                    web_sys::console::error_1(&wasm_bindgen::JsValue::from_str(&format!(
+                        "Failed to update DOM for theme: {:?}",
+                        e
+                    )));
+                }
+
+                self.set_status(format!("Theme changed to: {}", theme_name));
             }
-
-            self.set_status(format!("Theme changed to: {}", theme_name));
-        } else {
-            self.set_status(format!("Theme '{}' not found", theme_name));
+            Err(e) => {
+                web_sys::console::error_1(&wasm_bindgen::JsValue::from_str(&format!(
+                    "Failed to load theme '{}': {}",
+                    theme_name, e
+                )));
+                self.set_status(format!("Theme '{}' not found", theme_name));
+            }
         }
     }
 }

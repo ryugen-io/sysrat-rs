@@ -93,17 +93,17 @@ def find_cargo_projects(base_path: Path, recursive: bool) -> List[Path]:
     return sorted(set(projects))
 
 
-def lint_project(project_path: Path, deny_warnings: bool = False) -> int:
+def lint_project(project_path: Path, deny_warnings: bool = True) -> int:
     """
     Lint a Rust project with clippy
     Returns: 0=no warnings, 1=warnings found, 2=failed
+
+    NOTE: Always uses -D warnings to fail on any warnings
     """
     project_name = project_path.name
 
-    cmd = ['cargo', 'clippy', '--all-targets', '--all-features', '--']
-    if deny_warnings:
-        cmd.append('-D')
-        cmd.append('warnings')
+    # ALWAYS use -D warnings to catch all issues
+    cmd = ['cargo', 'clippy', '--all-targets', '--all-features', '--', '-D', 'warnings']
 
     try:
         result = subprocess.run(
