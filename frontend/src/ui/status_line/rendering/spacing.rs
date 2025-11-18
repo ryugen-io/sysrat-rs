@@ -17,17 +17,26 @@ pub fn render_row_with_spacing(
 ) -> Vec<Span<'static>> {
     let mut spans = vec![];
     let mut last_was_content = false;
+    let mut is_first_component = true;
 
     for component_config in &row_config.components {
         if let Some(span) = components::render_component(component_config, state, theme) {
+            let is_spacing = is_spacing_component(component_config);
+
+            // Add leading space for first content component (alignment)
+            if is_first_component && !is_spacing {
+                spans.push(Span::raw(" "));
+                is_first_component = false;
+            }
+
             // Add space before this component if last one was also content
             // (but not for spacer/separator types which handle their own spacing)
-            if last_was_content && !is_spacing_component(component_config) {
+            if last_was_content && !is_spacing {
                 spans.push(Span::raw(" "));
             }
 
             spans.push(span);
-            last_was_content = !is_spacing_component(component_config);
+            last_was_content = !is_spacing;
         }
     }
 
