@@ -15,7 +15,7 @@ pub fn load_statusline_config() {
     let builtin_path = repo_root.join("sys").join("layout").join("statusline.toml");
     let builtin_config = fs::read_to_string(&builtin_path).unwrap_or_else(|e| {
         panic!(
-            "{}[statusline]{} Failed to read built-in config at {:?}: {}",
+            "{}[statusline]{} failed to read built-in config at {:?}: {}",
             MAUVE, NC, builtin_path, e
         )
     });
@@ -39,18 +39,18 @@ pub fn load_statusline_config() {
 
     let final_config = if user_config_path.exists() {
         println!(
-            "cargo:warning={}[statusline]{} {}{}  {}Using user custom config: {:?}",
+            "cargo:warning={}[statusline]{} {}{}  {}using user custom config: {:?}",
             MAUVE, NC, BLUE, INFO_ICON, NC, user_config_path
         );
         fs::read_to_string(&user_config_path).unwrap_or_else(|e| {
             panic!(
-                "{}[statusline]{} Failed to read user config at {:?}: {}",
+                "{}[statusline]{} failed to read user config at {:?}: {}",
                 MAUVE, NC, user_config_path, e
             )
         })
     } else {
         println!(
-            "cargo:warning={}[statusline]{} {}{}  {}Using built-in config: {:?}",
+            "cargo:warning={}[statusline]{} {}{}  {}using built-in config: {:?}",
             MAUVE, NC, BLUE, INFO_ICON, NC, builtin_path
         );
         builtin_config
@@ -58,7 +58,7 @@ pub fn load_statusline_config() {
 
     // 3. Validate TOML syntax
     toml::from_str::<toml::Value>(&final_config).unwrap_or_else(|e| {
-        panic!("Invalid status line TOML configuration: {}", e);
+        panic!("invalid status line TOML configuration: {}", e);
     });
 
     // 4. Determine which config file to use and set path for include_str!
