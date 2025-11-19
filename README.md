@@ -4,7 +4,7 @@
 sysrat-rs/
 ├── .github/
 │   ├── logs/
-│   │   └── 20251119-102834-workflow.log
+│   │   └── 20251119-105029-workflow.log
 │   ├── skips/
 │   │   └── .skip.update-readme.example
 │   └── workflows/
@@ -205,6 +205,7 @@ sysrat-rs/
 ├── justfile
 ├── README.md
 ├── rebuild.py
+├── requirements-dev.txt
 ├── start.py
 ├── status.py
 ├── stop.py
