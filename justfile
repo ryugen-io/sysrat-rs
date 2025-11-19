@@ -142,7 +142,13 @@ html-checks:
 # Run all checks (Rust + Python + HTML)
 all-checks: rust-checks python-checks html-checks
 
-# Pre-commit checks (all linters + tests + audit)
-pre-commit: all-checks
-    @echo -e "\033[38;2;186;194;222m────────────────────────────────────────\033[0m"
-    @python3 sys/rust/audit.py --recursive
+# Pre-commit checks (full output)
+pc:
+    python3 sys/utils/precommit.py --verbose
+
+# Pre-commit checks (summary only)
+pc-summary:
+    python3 sys/utils/precommit.py --summary
+
+# Alias for backward compatibility
+pre-commit: pc
