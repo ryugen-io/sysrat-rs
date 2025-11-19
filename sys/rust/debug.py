@@ -119,49 +119,32 @@ class DebugToggler:
             has_newline = line.endswith('\n')
             line_content = line.rstrip('\n')
 
+            # Skip empty lines
+            if not line_content.strip():
+                continue
+
             if is_commented:
-                # Uncomment: Remove "// " but preserve proper indentation
-                # Handle both "    // code" and "    //     code" patterns
-                if line_content.startswith('    //     '):
-                    # Special case: double-indented (for inner code blocks)
-                    # "    //     code" -> "        code"
-                    new_line = line_content.replace('    //     ', '        ', 1)
-                elif line_content.startswith('    // '):
-                    # Normal case: "    // code" -> "    code"
-                    new_line = line_content.replace('    // ', '    ', 1)
-                elif re.match(r'^(\s*)// ', line_content):
-                    # Generic case for other indentation levels
-                    new_line = re.sub(r'^(\s*)// ', r'\1', line_content)
-                else:
-                    continue
-
-                if has_newline:
-                    new_line += '\n'
-                lines[i] = new_line
-                toggled += 1
+                # Uncomment: Remove "// " while preserving ALL whitespace
+                # Match: (leading whitespace)(// )(rest of line)
+                match = re.match(r'^(\s*)//\s?(.*)$', line_content)
+                if match:
+                    indent, code = match.groups()
+                    new_line = f"{indent}{code}"
+                    if has_newline:
+                        new_line += '\n'
+                    lines[i] = new_line
+                    toggled += 1
             else:
-                # Comment: Add "// " after indentation, preserving inner indentation
-                if line_content.startswith('        '):
-                    # Double-indented line (was inside format! macro)
-                    # "        code" -> "    //     code"
-                    new_line = line_content.replace('        ', '    //     ', 1)
-                elif line_content.startswith('    '):
-                    # Normal indented line
-                    # "    code" -> "    // code"
-                    new_line = line_content.replace('    ', '    // ', 1)
-                elif line_content.strip():  # Non-empty line
-                    # Generic case: add "// " after any indentation
-                    match = re.match(r'^(\s*)(.*)$', line_content)
-                    if match:
-                        indent, code = match.groups()
-                        new_line = f"{indent}// {code}"
-                else:
-                    continue
-
-                if has_newline:
-                    new_line += '\n'
-                lines[i] = new_line
-                toggled += 1
+                # Comment: Add "// " after leading whitespace, preserving ALL indentation
+                # Match: (leading whitespace)(rest of line)
+                match = re.match(r'^(\s*)(.*)$', line_content)
+                if match:
+                    indent, code = match.groups()
+                    new_line = f"{indent}// {code}"
+                    if has_newline:
+                        new_line += '\n'
+                    lines[i] = new_line
+                    toggled += 1
 
         return toggled
 
