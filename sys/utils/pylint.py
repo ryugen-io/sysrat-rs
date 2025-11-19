@@ -151,7 +151,7 @@ def lint_file(filepath: Path, tools: List[str]) -> Tuple[bool, int]:
                 print(f"    {Colors.SUBTEXT}... and {len(errors) - 2} more{Colors.NC}")
 
     if issues == 0:
-        log_success("  Passed syntax check")
+        log_success("  passed syntax check")
         return True, 0
     else:
         log_error(f"  {issues} critical issue(s) found")
@@ -291,7 +291,7 @@ Available tools: flake8, pylint, mypy
         print()
 
     # Summary
-    print(f"{Colors.GREEN}Summary:{Colors.NC}")
+    print(f"{Colors.GREEN}summary:{Colors.NC}")
     print()
     print(f"{Colors.BLUE}  Total files:       {Colors.NC}{total_files}")
     print(f"{Colors.GREEN}  Passed:            {Colors.NC}{passed_files}")

@@ -132,7 +132,7 @@ class PyCacheCleaner:
 
         # Print summary
         print()
-        print(f"{Colors.MAUVE}Summary{Colors.NC}")
+        print(f"{Colors.MAUVE}summary{Colors.NC}")
         print()
         print(f"{Colors.TEXT}Total directories:     {Colors.NC}{Colors.SAPPHIRE}{total_dirs}{Colors.NC}")
         print(f"{Colors.TEXT}Total size:            {Colors.NC}{Colors.SAPPHIRE}{self.format_size(self.total_size)}{Colors.NC}")

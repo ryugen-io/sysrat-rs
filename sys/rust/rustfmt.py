@@ -229,11 +229,11 @@ Examples:
             failed += 1
 
     print()
-    print(f"{Colors.MAUVE}Summary{Colors.NC}")
+    print(f"{Colors.MAUVE}summary{Colors.NC}")
     print()
 
     total = formatted + unchanged + failed
-    print(f"{Colors.TEXT}Total projects:      {Colors.NC}{Colors.SAPPHIRE}{total}{Colors.NC}")
+    print(f"{Colors.TEXT}total projects:      {Colors.NC}{Colors.SAPPHIRE}{total}{Colors.NC}")
 
     if formatted > 0:
         action = "need formatting" if args.check else "formatted"

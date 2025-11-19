@@ -242,11 +242,11 @@ About cargo-auditable:
             failed += 1
         print()
 
-    print(f"{Colors.MAUVE}Summary{Colors.NC}")
+    print(f"{Colors.MAUVE}summary{Colors.NC}")
     print()
 
     total = clean + warnings + failed
-    print(f"{Colors.TEXT}Total projects:      {Colors.NC}{Colors.SAPPHIRE}{total}{Colors.NC}")
+    print(f"{Colors.TEXT}total projects:      {Colors.NC}{Colors.SAPPHIRE}{total}{Colors.NC}")
 
     if clean > 0:
         print(f"{Colors.GREEN}clean:               {Colors.NC}{Colors.SAPPHIRE}{clean}{Colors.NC}")

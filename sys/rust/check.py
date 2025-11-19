@@ -201,11 +201,11 @@ Examples:
             failed += 1
 
     print()
-    print(f"{Colors.MAUVE}Summary{Colors.NC}")
+    print(f"{Colors.MAUVE}summary{Colors.NC}")
     print()
 
     total = passed + errors + failed
-    print(f"{Colors.TEXT}Total projects:      {Colors.NC}{Colors.SAPPHIRE}{total}{Colors.NC}")
+    print(f"{Colors.TEXT}total projects:      {Colors.NC}{Colors.SAPPHIRE}{total}{Colors.NC}")
 
     if passed > 0:
         print(f"{Colors.GREEN}passed:              {Colors.NC}{Colors.SAPPHIRE}{passed}{Colors.NC}")

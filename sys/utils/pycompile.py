@@ -80,7 +80,7 @@ class PyCompileChecker:
         success, error_msg = self.compile_file(filepath)
 
         if success:
-            log_success("  Compilation successful")
+            log_success("  compilation successful")
             self.passed_files += 1
             return True
         else:
@@ -128,7 +128,7 @@ class PyCompileChecker:
             print()
 
         # Print summary
-        print(f"{Colors.MAUVE}Summary{Colors.NC}")
+        print(f"{Colors.MAUVE}summary{Colors.NC}")
         print()
         print(f"{Colors.TEXT}Total files checked:   {Colors.NC}{Colors.SAPPHIRE}{self.total_files}{Colors.NC}")
         print(f"{Colors.GREEN}Passed:                {Colors.NC}{Colors.SAPPHIRE}{self.passed_files}{Colors.NC}")

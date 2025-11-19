@@ -293,7 +293,7 @@ Examples:
 
     # Print summary
     print()
-    print(f"{Colors.GREEN}{Icons.CHART}  Summary:{Colors.NC}")
+    print(f"{Colors.GREEN}{Icons.CHART}  summary:{Colors.NC}")
     print()
     print(f"{Colors.TEXT}  Total files:     {Colors.NC}{total_files:6d}")
     print(f"{Colors.TEXT}  Code lines:      {Colors.NC}{total_code:6d} {Colors.SUBTEXT}({code_pct:.1f}%){Colors.NC}")

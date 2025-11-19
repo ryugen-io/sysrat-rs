@@ -118,20 +118,25 @@ htmlformat-check:
 # Run all Rust checks (fmt, clippy, check, test)
 rust-checks:
     @python3 sys/rust/rustfmt.py --recursive
+    @echo -e "\033[38;2;186;194;222m────────────────────────────────────────\033[0m"
     @python3 sys/rust/clippy.py --recursive
+    @echo -e "\033[38;2;186;194;222m────────────────────────────────────────\033[0m"
     @python3 sys/rust/check.py --recursive
+    @echo -e "\033[38;2;186;194;222m────────────────────────────────────────\033[0m"
     @python3 sys/rust/test_rust.py --recursive
 
 # Run all Python checks (pylint, pycompile)
 python-checks:
     @echo -e "\033[38;2;186;194;222m────────────────────────────────────────\033[0m"
     @python3 sys/utils/pylint.py --recursive
+    @echo -e "\033[38;2;186;194;222m────────────────────────────────────────\033[0m"
     @python3 sys/utils/pycompile.py --recursive
 
 # Run all HTML checks (format, lint)
 html-checks:
     @echo -e "\033[38;2;186;194;222m────────────────────────────────────────\033[0m"
     @python3 sys/html/htmlformat.py --recursive --check
+    @echo -e "\033[38;2;186;194;222m────────────────────────────────────────\033[0m"
     @python3 sys/html/htmllint.py --recursive
 
 # Run all checks (Rust + Python + HTML)

@@ -312,7 +312,7 @@ Examples:
             print(f"  {Colors.TEXT}{filepath.name}{Colors.NC} {Colors.SUBTEXT}(no changes needed){Colors.NC}")
 
     # Summary
-    print(f"\n{Colors.GREEN}Summary:{Colors.NC}\n")
+    print(f"\n{Colors.GREEN}summary:{Colors.NC}\n")
     print(f"{Colors.BLUE}  Total files:     {Colors.NC}{total_files}")
     print(f"{Colors.GREEN}  Files fixed:     {Colors.NC}{fixed_files}")
     print(f"{Colors.TEXT}  No changes:      {Colors.NC}{total_files - fixed_files}")

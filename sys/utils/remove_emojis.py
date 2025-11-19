@@ -275,7 +275,7 @@ Examples:
             print(f"  {Colors.TEXT}{filepath.name}{Colors.NC} {Colors.SUBTEXT}(no emojis){Colors.NC}")
 
     # Summary
-    print(f"\n{Colors.GREEN}Summary:{Colors.NC}\n")
+    print(f"\n{Colors.GREEN}summary:{Colors.NC}\n")
     print(f"{Colors.BLUE}  Total files:     {Colors.NC}{len(files)}")
     print(f"{Colors.GREEN}  Cleaned:         {Colors.NC}{cleaned_count}")
     print(f"{Colors.TEXT}  No emojis:       {Colors.NC}{unchanged_count}")
