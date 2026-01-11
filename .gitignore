@@ -94,3 +94,4 @@ __pycache__/
 # Test artifacts
 test-scripts.sh
 .venv-dev/
+temp/

@@ -52,6 +52,22 @@ def check_html5validator() -> bool:
         return False
 
 
+def load_gitignore_patterns(repo_root: Path) -> List[str]:
+    """Load patterns from .gitignore file"""
+    gitignore_path = repo_root / '.gitignore'
+    patterns = []
+
+    if gitignore_path.exists():
+        with open(gitignore_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                # Skip empty lines, comments, and negation patterns
+                if line and not line.startswith('#') and not line.startswith('!'):
+                    patterns.append(line)
+
+    return patterns
+
+
 def find_html_files(base_path: Path, recursive: bool) -> List[Path]:
     """Find all HTML files in the given path"""
     html_files = []
@@ -61,15 +77,19 @@ def find_html_files(base_path: Path, recursive: bool) -> List[Path]:
     else:
         html_files = list(base_path.glob('*.html'))
 
-    # Filter out build artifacts and dependencies
+    # Base exclude patterns
     exclude_patterns = [
         'target/', 'dist/', 'node_modules/', '.git/',
-        'vendor/', 'build/', '__pycache__/', '.venv'
+        'vendor/', 'build/', '__pycache__/'
     ]
+
+    # Add patterns from .gitignore
+    gitignore_patterns = load_gitignore_patterns(REPO_ROOT)
+    exclude_patterns.extend(gitignore_patterns)
 
     filtered_files = []
     for html_file in html_files:
-        if not any(pattern in str(html_file) for pattern in exclude_patterns):
+        if not any(pattern.rstrip('/') in str(html_file) for pattern in exclude_patterns):
             filtered_files.append(html_file)
 
     return filtered_files
