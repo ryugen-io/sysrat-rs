@@ -1,4 +1,7 @@
-use super::{ContainerListState, EditorState, FileListState, MenuState, Pane, VimMode, refresh};
+use super::{
+    ContainerListState, EditorState, FileListState, MenuState, Pane, SplashState, VimMode, refresh,
+};
+use crate::storage::SavedState;
 use crate::{
     api::ContainerDetails,
     keybinds::Keybinds,
@@ -10,6 +13,7 @@ pub struct AppState {
     pub focus: Pane,
     pub vim_mode: VimMode,
     pub menu: MenuState,
+    pub splash: SplashState,
     pub file_list: FileListState,
     pub container_list: ContainerListState,
     pub container_details: Option<ContainerDetails>,
@@ -18,14 +22,16 @@ pub struct AppState {
     pub status_message: Option<String>,
     pub keybinds: Keybinds,
     pub current_theme: ThemeConfig,
+    pub restored_state: Option<SavedState>,
 }
 
 impl AppState {
     pub fn new() -> Self {
         let mut state = Self {
-            focus: Pane::Menu,
+            focus: Pane::Splash,
             vim_mode: VimMode::Normal,
             menu: MenuState::new(),
+            splash: SplashState::new(),
             file_list: FileListState::new(),
             container_list: ContainerListState::new(),
             container_details: None,
@@ -34,20 +40,43 @@ impl AppState {
             status_message: None,
             keybinds: Keybinds::load(),
             current_theme: load_current_theme(),
+            restored_state: None,
+        };
+
+        // Check if we've already shown the splash screen in this session
+        let splash_seen = if let Some(window) = web_sys::window() {
+            if let Ok(Some(storage)) = window.session_storage() {
+                if storage.get_item("splash_seen").unwrap_or(None).is_some() {
+                    true
+                } else {
+                    let _ = storage.set_item("splash_seen", "true");
+                    false
+                }
+            } else {
+                false
+            }
+        } else {
+            false
         };
 
         // Try to restore from localStorage
-        if let Some(saved) = storage::load_state()
-            && let Some(pane) = Pane::from_str(&saved.pane)
-        {
-            state.focus = pane;
+        if let Some(saved) = storage::load_state() {
+            if splash_seen {
+                // Restore immediately if we've already seen the splash
+                if let Some(pane) = Pane::from_str(&saved.pane) {
+                    state.focus = pane;
 
-            // If we were in the editor, restore the file
-            if pane == Pane::Editor
-                && let (Some(filename), Some(content)) = (saved.filename, saved.content)
-            {
-                state.editor.load_content(filename, content);
-                state.dirty = false;
+                    // If we were in the editor, restore the file
+                    if pane == Pane::Editor
+                        && let (Some(filename), Some(content)) = (saved.filename, saved.content)
+                    {
+                        state.editor.load_content(filename, content);
+                        state.dirty = false;
+                    }
+                }
+            } else {
+                // Otherwise defer restoration until after splash screen
+                state.restored_state = Some(saved);
             }
         }
 

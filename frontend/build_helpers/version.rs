@@ -15,6 +15,11 @@ pub fn extract_dependency_versions() {
         println!("cargo:rustc-env=RATATUI_VERSION=0.29");
     }
 
+    // Extract tachyonfx version
+    if let Some(version) = find_dependency_version(&cargo_toml, "tachyonfx") {
+        println!("cargo:rustc-env=TACHYONFX_VERSION={}", version);
+    }
+
     // Extract Rust edition from frontend Cargo.toml
     if let Some(edition) = extract_edition(&cargo_toml) {
         println!("cargo:rustc-env=RUST_EDITION={}", edition);

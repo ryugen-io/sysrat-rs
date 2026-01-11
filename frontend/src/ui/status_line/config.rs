@@ -66,6 +66,7 @@ impl StatusLineConfig {
             Pane::FileList => &self.file_list,
             Pane::Editor => &self.editor,
             Pane::ContainerList => &self.container_list,
+            Pane::Splash => &self.menu, // Splash uses same status line as Menu
         }
     }
 }

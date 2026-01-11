@@ -111,8 +111,37 @@ pub fn handle_key_event(state: Rc<RefCell<AppState>>, key_event: KeyEvent) {
         return;
     }
 
+    web_sys::console::log_1(&wasm_bindgen::JsValue::from_str(&format!(
+        "[DEBUG] Key event: {:?}",
+        key_event
+    )));
+
     match state_mut.focus {
         Pane::Menu => menu::handle_keys(&mut state_mut, &state, key_event),
+        Pane::Splash => {
+            // Check if enough time has passed (e.g., 500ms)
+            if js_sys::Date::now() - state_mut.splash.start_time > 500.0 {
+                // Check if we have a saved state to restore
+                if let Some(saved) = state_mut.restored_state.take() {
+                    if let Some(pane) = Pane::from_str(&saved.pane) {
+                        state_mut.focus = pane;
+
+                        // If we were in the editor, restore the file
+                        if pane == Pane::Editor
+                            && let (Some(filename), Some(content)) = (saved.filename, saved.content)
+                        {
+                            state_mut.editor.load_content(filename, content);
+                            state_mut.dirty = false;
+                        }
+                    } else {
+                        state_mut.focus = Pane::Menu;
+                    }
+                } else {
+                    // Default to Menu if no saved state
+                    state_mut.focus = Pane::Menu;
+                }
+            }
+        }
         Pane::FileList => file_list::handle_keys(&mut state_mut, &state, key_event),
         Pane::Editor => editor::handle_keys(&mut state_mut, key_event),
         Pane::ContainerList => container_list::handle_keys(&mut state_mut, &state, key_event),

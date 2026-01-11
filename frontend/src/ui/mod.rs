@@ -3,6 +3,7 @@ mod container_list;
 mod editor;
 mod file_list;
 mod menu;
+mod splash;
 mod status_line;
 
 use crate::state::{AppState, Pane};
@@ -28,6 +29,7 @@ pub fn render(f: &mut Frame, state: &AppState) {
 
     // Main content depends on current pane
     match state.focus {
+        Pane::Splash => splash::render(f, state, chunks[0]),
         Pane::Menu => menu::render(f, state, chunks[0]),
         Pane::ContainerList => render_container_view(f, state, chunks[0]),
         _ => render_main_content(f, state, chunks[0]),

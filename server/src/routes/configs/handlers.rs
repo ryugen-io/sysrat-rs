@@ -1,5 +1,3 @@
-use super::validation::validate_filename;
-use crate::config::SharedConfig;
 use crate::routes::types::{
     FileContentResponse, FileInfo, FileListResponse, WriteConfigRequest, WriteConfigResponse,
 };
@@ -8,24 +6,34 @@ use axum::{
     extract::{Path, State},
     http::StatusCode,
 };
+use sysrat_core::config::SharedConfig;
 
 /// GET /api/configs - List all config files
 pub async fn list_configs(
     State(config): State<SharedConfig>,
 ) -> Result<Json<FileListResponse>, (StatusCode, String)> {
-    // Build file info list with metadata
-    let mut files = Vec::new();
-    for name in config.list_files() {
-        if let Some(file_cfg) = config.get_file(&name) {
-            files.push(FileInfo {
-                name: file_cfg.name.clone(),
-                description: file_cfg.description.clone(),
-                readonly: file_cfg.readonly,
-                theme: file_cfg.theme.clone(),
-            });
-        }
-    }
-    Ok(Json(FileListResponse { files }))
+    let files = sysrat_core::configs::actions::list_files(&config).await;
+    // Convert core::types::FileInfo to routes::types::FileInfo if they are different,
+    // OR likely logic is: core types should replace routes types eventually.
+    // For now, let's assume we map or use the same types if I replace imports.
+    // But wait, I haven't replaced imports yet.
+    // Let's rely on mapping for safety or better: REPLACE the usage of FileInfo in routes with core::types::FileInfo
+
+    // Actually, let's map it clearly to avoid type errors if I haven't switched everything.
+    let mapped_files = files
+        .into_iter()
+        .map(|f| FileInfo {
+            name: f.name,
+            description: f.description,
+            readonly: f.readonly,
+            category: f.category,
+            theme: f.theme,
+        })
+        .collect();
+
+    Ok(Json(FileListResponse {
+        files: mapped_files,
+    }))
 }
 
 /// GET /api/configs/*filename - Read a config file
@@ -36,26 +44,15 @@ pub async fn read_config(
     // Wildcard routes include leading slash, strip it
     let filename = filename.strip_prefix('/').unwrap_or(&filename);
 
-    validate_filename(filename, &config)?;
-
-    // Look up file in config
-    let file_config = config.get_file(filename).ok_or((
-        StatusCode::NOT_FOUND,
-        format!("File not found in config: {}", filename),
-    ))?;
-
-    let path = &file_config.path;
-
-    match tokio::fs::read_to_string(path).await {
+    match sysrat_core::configs::actions::read_file(filename, &config).await {
         Ok(content) => Ok(Json(FileContentResponse { content })),
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Err((
-            StatusCode::NOT_FOUND,
-            format!("File not found on disk: {}", path),
-        )),
-        Err(e) => Err((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Read error: {}", e),
-        )),
+        Err(e) => {
+            let status: StatusCode = match e.kind() {
+                std::io::ErrorKind::NotFound => StatusCode::NOT_FOUND,
+                _ => StatusCode::INTERNAL_SERVER_ERROR,
+            };
+            Err((status, format!("Read error: {}", e)))
+        }
     }
 }
 
@@ -68,33 +65,15 @@ pub async fn write_config(
     // Wildcard routes include leading slash, strip it
     let filename = filename.strip_prefix('/').unwrap_or(&filename);
 
-    validate_filename(filename, &config)?;
-
-    // Look up file in config
-    let file_config = config.get_file(filename).ok_or((
-        StatusCode::NOT_FOUND,
-        format!("File not found in config: {}", filename),
-    ))?;
-
-    // Check if file is readonly
-    if file_config.readonly {
-        return Err((
-            StatusCode::FORBIDDEN,
-            format!("File is read-only: {}", filename),
-        ));
-    }
-
-    let path = &file_config.path;
-
-    // Create backup before writing (if file exists)
-    let backup_path = format!("{}.backup", path);
-    let _ = tokio::fs::copy(path, &backup_path).await;
-
-    match tokio::fs::write(path, payload.content.as_bytes()).await {
+    match sysrat_core::configs::actions::write_file(filename, &payload.content, &config).await {
         Ok(_) => Ok(Json(WriteConfigResponse { success: true })),
-        Err(e) => Err((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Write error: {}", e),
-        )),
+        Err(e) => {
+            let status: StatusCode = match e.kind() {
+                std::io::ErrorKind::NotFound => StatusCode::NOT_FOUND,
+                std::io::ErrorKind::PermissionDenied => StatusCode::FORBIDDEN,
+                _ => StatusCode::INTERNAL_SERVER_ERROR,
+            };
+            Err((status, format!("Write error: {}", e)))
+        }
     }
 }

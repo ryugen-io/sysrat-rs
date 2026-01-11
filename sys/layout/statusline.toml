@@ -23,8 +23,13 @@ rows = [
         { type = "text", value = "Ratatui v", style = "label" },
         { type = "dependency", name = "ratatui", style = "value" },
         { type = "separator", value = " | " },
+
         { type = "text", value = "Axum v", style = "label" },
         { type = "dependency", name = "axum", style = "value" },
+        { type = "separator", value = " | " },
+        { type = "text", value = "TachyonFX v", style = "label" },
+        { type = "dependency", name = "tachyonfx", style = "value" },
+
     ]},
 ]
 
@@ -63,6 +68,9 @@ rows = [
         { type = "separator", value = " | " },
         { type = "text", value = "Axum v", style = "label" },
         { type = "dependency", name = "axum", style = "value" },
+        { type = "separator", value = " | " },
+        { type = "text", value = "TachyonFX v", style = "label" },
+        { type = "dependency", name = "tachyonfx", style = "value" },
     ]},
 ]
 
@@ -101,6 +109,9 @@ rows = [
         { type = "separator", value = " | " },
         { type = "text", value = "Axum v", style = "label" },
         { type = "dependency", name = "axum", style = "value" },
+        { type = "separator", value = " | " },
+        { type = "text", value = "TachyonFX v", style = "label" },
+        { type = "dependency", name = "tachyonfx", style = "value" },
     ]},
 ]
 
@@ -134,8 +145,13 @@ rows = [
         { type = "text", value = "Ratatui v", style = "label" },
         { type = "dependency", name = "ratatui", style = "value" },
         { type = "separator", value = " | " },
+
         { type = "text", value = "Axum v", style = "label" },
         { type = "dependency", name = "axum", style = "value" },
+        { type = "separator", value = " | " },
+        { type = "text", value = "TachyonFX v", style = "label" },
+        { type = "dependency", name = "tachyonfx", style = "value" },
+
     ]},
 ]
 

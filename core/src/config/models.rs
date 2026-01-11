@@ -22,6 +22,9 @@ pub struct ConfigFile {
     pub description: String,
     #[serde(default)]
     pub readonly: bool,
+    /// Optional category label used for grouping/sorting in the UI
+    #[serde(default)]
+    pub category: Option<String>,
     /// Optional theme variant name for this file (e.g., "mocha", "latte", "frappe")
     /// If not specified, the default theme is used
     #[serde(default)]
@@ -40,6 +43,9 @@ pub struct ConfigDirectory {
     pub description: String,
     #[serde(default)]
     pub readonly: bool,
+    /// Optional category label applied to all files found in this directory
+    #[serde(default)]
+    pub category: Option<String>,
 }
 
 fn default_depth() -> usize {

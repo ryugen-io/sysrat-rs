@@ -21,6 +21,10 @@ impl FileListTheme {
         theme.standard_normal_item()
     }
 
+    pub fn header_style(theme: &ThemeConfig) -> Style {
+        theme.standard_title()
+    }
+
     pub fn selected_prefix() -> &'static str {
         SELECTED_PREFIX
     }

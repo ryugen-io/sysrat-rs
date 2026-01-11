@@ -26,20 +26,21 @@ count_lines() {
     case "$ext" in
         sh)
             # Shell: lines starting with #
-            comments=$(grep -cE '^\s*#' "$file" 2> /dev/null || echo "0")
+            comments=$(grep -cE '^\s*#' "$file" 2>/dev/null) || comments=0
             ;;
         py)
             # Python: lines starting with #
-            comments=$(grep -cE '^\s*#' "$file" 2> /dev/null || echo "0")
+            comments=$(grep -cE '^\s*#' "$file" 2>/dev/null) || comments=0
             ;;
         yml | yaml)
             # YAML: lines starting with #
-            comments=$(grep -cE '^\s*#' "$file" 2> /dev/null || echo "0")
+            comments=$(grep -cE '^\s*#' "$file" 2>/dev/null) || comments=0
             ;;
     esac
 
     # Count blank lines
-    local blank=$(grep -cE '^\s*$' "$file" 2> /dev/null || echo "0")
+    local blank
+    blank=$(grep -cE '^\s*$' "$file" 2>/dev/null) || blank=0
 
     # Code lines = total - comments - blank
     local code=$((total - comments - blank))

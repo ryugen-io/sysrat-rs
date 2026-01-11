@@ -51,7 +51,7 @@ def load_env_config(repo_root: Path) -> dict:
 
     # Validate required keys
     required_keys = [
-        'SERVER_BINARY', 'DISPLAY_NAME', 'SERVER_HOST', 'SERVER_PORT',
+        'SERVER_BINARY', 'DISPLAY_NAME', 'SERVER_PORT',
         'SERVER_DIR', 'FRONTEND_DIR', 'RUST_TOOLCHAIN'
     ]
     missing = [key for key in required_keys if key not in config]
@@ -59,6 +59,18 @@ def load_env_config(repo_root: Path) -> dict:
         raise ValueError(f"Missing required config keys in .env: {', '.join(missing)}")
 
     return config
+
+
+def get_display_host() -> str:
+    """Get the primary IP address for display purposes"""
+    import socket
+    try:
+        # Connect to external address to determine primary interface IP
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(('8.8.8.8', 80))
+            return s.getsockname()[0]
+    except OSError:
+        return 'localhost'
 
 
 def command_exists(cmd: str) -> bool:
@@ -355,7 +367,7 @@ def start_server(config: dict) -> bool:
             print()
             log_success(f"server running (pid: {server_pid})")
             print()
-            log_info(f"url: {Colors.SAPPHIRE}http://{config['SERVER_HOST']}:"
+            log_info(f"url: {Colors.SAPPHIRE}http://{get_display_host()}:"
                      f"{port}{Colors.NC}")
             log_info(f"logs: {Colors.BLUE}tail -f {log_file}{Colors.NC}")
             log_info(f"stop: {Colors.BLUE}./stop.py{Colors.NC}")

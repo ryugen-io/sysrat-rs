@@ -8,6 +8,9 @@ pub struct FileInfo {
     /// Optional theme variant for this file
     #[serde(default)]
     pub theme: Option<String>,
+    /// Optional category label used for grouping/sorting in the UI
+    #[serde(default)]
+    pub category: Option<String>,
 }
 
 #[derive(Deserialize)]

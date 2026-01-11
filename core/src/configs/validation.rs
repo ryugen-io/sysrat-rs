@@ -1,16 +1,16 @@
-use crate::config::SharedConfig;
-use axum::http::StatusCode;
+use crate::config::AppConfig;
+use std::io;
 
 /// Validates a filename for security
 /// Extension whitelist is loaded from sysrat.toml
-pub(super) fn validate_filename(
-    filename: &str,
-    config: &SharedConfig,
-) -> Result<(), (StatusCode, String)> {
+pub fn validate_filename(filename: &str, config: &AppConfig) -> io::Result<()> {
     // Security: No path traversal or Windows paths
     // Forward slashes (/) are allowed for directory-scanned files
     if filename.contains("..") || filename.contains('\\') {
-        return Err((StatusCode::BAD_REQUEST, "Invalid filename".into()));
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "Invalid filename",
+        ));
     }
 
     // Extract extension from filename (handle paths with slashes)
@@ -23,8 +23,8 @@ pub(super) fn validate_filename(
         .any(|ext| actual_filename.ends_with(&format!(".{}", ext)));
 
     if !has_valid_extension {
-        return Err((
-            StatusCode::BAD_REQUEST,
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
             format!(
                 "File extension not allowed. Allowed: {}",
                 allowed_extensions.join(", ")

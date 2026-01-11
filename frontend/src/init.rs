@@ -85,5 +85,8 @@ pub fn load_pane_data(app_state: &Rc<RefCell<AppState>>) {
             let mut state = app_state.borrow_mut();
             state.set_status("Welcome to Config Manager");
         }
+        Pane::Splash => {
+            // No data to load for splash
+        }
     }
 }

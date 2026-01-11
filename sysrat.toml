@@ -4,28 +4,41 @@
 # Global settings
 [settings]
 # Allowed file extensions for security (whitelist)
-allowed_extensions = ["toml"]
+allowed_extensions = ["toml", "log"]
 
 # Each file entry specifies:
 # - path: Absolute path to the file on the system
 # - name: Display name in the UI
 # - description: Optional description
+# - category: Optional label to group/sort files in the UI (fully custom)
 # - readonly: Optional, if true the file cannot be edited
 # - theme: Optional, specify a custom theme variant for this file (e.g., "mocha", "latte")
 
 # sysrat -> sysrat.toml
-[[files]]
-path = "/data/code/devel/git.repos/sysrat-rs/sysrat.toml"
-name = "sysrat.toml"
-description = "sysrat Main config File"
+#[[files]]
+#path = "/data/code/devel/git.repos/sysrat-rs/sysrat.toml"
+#name = "sysrat.toml"
+#description = "sysrat Main config File"
+#category = "core"
 
 # Directory scanning example
 # Scans a directory recursively and includes files matching specific types
 [[directories]]
-path = "/data/code/devel/git.repos/sysrat-rs"
-name = "sysrat"
+path = "~/.config"
+name = "~/.config"
 depth = 3
 types = ["toml"]
-description = "sysrat Main Dir"
+description = "Main System Config Directory"
+category = "Sys"
+
+# Directory scanning example
+# Scans a directory recursively and includes files matching specific types
+[[directories]]
+path = "/data/logs"
+name = "/data/logs"
+depth = 5
+types = ["log"]
+description = "Main System Config Directory"
+category = "logs"
 
 # You can add more files and directories here!

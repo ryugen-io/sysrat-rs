@@ -7,6 +7,9 @@ pub fn scan_directory(dir_config: &ConfigDirectory) -> Result<Vec<ConfigFile>, S
     let mut found_files = Vec::new();
     let base_path = Path::new(&dir_config.path);
 
+    // Normalize directory name (strip leading slash for consistent naming)
+    let dir_name = dir_config.name.trim_start_matches('/');
+
     // Expand home directory
     let expanded_path = if dir_config.path.starts_with("~/") {
         let home =
@@ -62,9 +65,9 @@ pub fn scan_directory(dir_config: &ConfigDirectory) -> Result<Vec<ConfigFile>, S
 
         // Use directory name as prefix for uniqueness
         let display_name = if relative_path.contains('/') || relative_path.contains('\\') {
-            format!("{}/{}", dir_config.name, relative_path)
+            format!("{}/{}", dir_name, relative_path)
         } else {
-            format!("{}/{}", dir_config.name, file_name)
+            format!("{}/{}", dir_name, file_name)
         };
 
         found_files.push(ConfigFile {
@@ -72,6 +75,7 @@ pub fn scan_directory(dir_config: &ConfigDirectory) -> Result<Vec<ConfigFile>, S
             name: display_name,
             description: format!("From directory: {}", dir_config.description),
             readonly: dir_config.readonly,
+            category: dir_config.category.clone(),
             theme: None,
         });
     }

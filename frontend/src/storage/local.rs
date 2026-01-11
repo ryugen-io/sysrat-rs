@@ -1,7 +1,7 @@
 use super::types::SavedState;
 use web_sys::window;
 
-const STORAGE_KEY: &str = "sysrat-state";
+const STORAGE_KEY: &str = "sysrat-state-v4-manual";
 
 pub fn save_state(pane: &str, filename: Option<&str>, content: Option<&str>) {
     if let Some(storage) = get_local_storage() {
@@ -56,7 +56,16 @@ fn deserialize_state(json: &str) -> Option<SavedState> {
     let mut filename = None;
     let mut content = None;
 
-    for part in json[1..json.len() - 1].split(',') {
+    // Robust splitting: standard split(',') breaks on commas in content.
+    // We strictly iterate chars to find key-value pairs while respecting quotes.
+    // This is the "Safety" feature for the manual parser.
+    let body = &json[1..json.len() - 1];
+    let mut start = 0;
+    let mut in_quote = false;
+    let mut escape = false;
+
+    // Use a closure to handle each part
+    let mut process_part = |part: &str| {
         if let Some((key, value)) = part.split_once(':') {
             let key = key.trim().trim_matches('"');
             let value = value.trim();
@@ -68,6 +77,28 @@ fn deserialize_state(json: &str) -> Option<SavedState> {
                 _ => {}
             }
         }
+    };
+
+    for (i, c) in body.char_indices() {
+        if escape {
+            escape = false;
+            continue;
+        }
+        if c == '\\' {
+            escape = true;
+            continue;
+        }
+        if c == '"' {
+            in_quote = !in_quote;
+        }
+        if c == ',' && !in_quote {
+            process_part(&body[start..i]);
+            start = i + 1;
+        }
+    }
+    // Process last part
+    if start < body.len() {
+        process_part(&body[start..]);
     }
 
     pane.map(|p| SavedState {

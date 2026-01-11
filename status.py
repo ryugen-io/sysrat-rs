@@ -41,7 +41,7 @@ def load_env_config(repo_root: Path) -> dict:
                 config[key] = value
 
     # Validate required keys
-    required_keys = ['SERVER_BINARY', 'DISPLAY_NAME', 'SERVER_HOST', 'SERVER_PORT']
+    required_keys = ['SERVER_BINARY', 'DISPLAY_NAME', 'SERVER_PORT']
     missing = [key for key in required_keys if key not in config]
     if missing:
         raise ValueError(f"Missing required config keys in .env: {', '.join(missing)}")
@@ -63,6 +63,18 @@ def is_running(pid: int) -> bool:
         return True
     except subprocess.CalledProcessError:
         return False
+
+
+def get_display_host() -> str:
+    """Get the primary IP address for display purposes"""
+    import socket
+    try:
+        # Connect to external address to determine primary interface IP
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(('8.8.8.8', 80))
+            return s.getsockname()[0]
+    except OSError:
+        return 'localhost'
 
 
 def check_port(port: str) -> bool:
@@ -163,7 +175,7 @@ def show_server_status(config: dict) -> bool:
     server_binary = config['SERVER_BINARY']
     app_name = 'sysrat'
     port = config['SERVER_PORT']
-    host = config['SERVER_HOST']
+    display_host = get_display_host()
 
     # Get XDG-compliant paths
     pid_file = get_pid_file(app_name, config)
@@ -221,7 +233,7 @@ def show_server_status(config: dict) -> bool:
     # Check port
     if check_port(port):
         log_stat(Icons.NET, "Port:", f"{port} (listening)", Colors.GREEN)
-        log_stat(Icons.INFO, "URL:", f"http://{host}:{port}", Colors.SAPPHIRE)
+        log_stat(Icons.INFO, "URL:", f"http://{display_host}:{port}", Colors.SAPPHIRE)
     else:
         log_stat(Icons.NET, "Port:", f"{port} (not listening)", Colors.RED)
 
@@ -244,7 +256,6 @@ def main():
     config = load_env_config(REPO_ROOT)
     display_name = config['DISPLAY_NAME']
     server_binary = config['SERVER_BINARY']
-    host = config['SERVER_HOST']
     port = config['SERVER_PORT']
 
     print()

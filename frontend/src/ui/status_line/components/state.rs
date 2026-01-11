@@ -16,6 +16,11 @@ pub fn render_vim_mode(state: &AppState, theme: &ThemeConfig) -> Option<Span<'st
 }
 
 pub fn render_filename(state: &AppState, theme: &ThemeConfig) -> Option<Span<'static>> {
+    // Only show filename in FileList/Editor panes
+    if !matches!(state.focus, Pane::FileList | Pane::Editor) {
+        return None;
+    }
+
     if let Some(filename) = &state.editor.current_file {
         Some(Span::styled(
             filename.clone(),
@@ -30,6 +35,11 @@ pub fn render_filename(state: &AppState, theme: &ThemeConfig) -> Option<Span<'st
 }
 
 pub fn render_modified_indicator(state: &AppState, theme: &ThemeConfig) -> Option<Span<'static>> {
+    // Only show modified indicator in FileList/Editor panes
+    if !matches!(state.focus, Pane::FileList | Pane::Editor) {
+        return None;
+    }
+
     if state.dirty {
         Some(Span::styled(
             "[modified]".to_string(),
@@ -59,7 +69,8 @@ pub fn render_status_message(state: &AppState, theme: &ThemeConfig) -> Option<Sp
 pub fn render_help_text(state: &AppState, theme: &ThemeConfig) -> Option<Span<'static>> {
     // No help text in Menu pane
     let help_text = match (state.focus, state.vim_mode) {
-        (Pane::Menu, _) => String::new(),
+        (Pane::Menu, _) => String::new(), // Menu has no pane-specific help
+        (Pane::Splash, _) => String::new(), // Splash has no pane-specific help
         (Pane::FileList, _) => state.keybinds.file_list.help_text(&state.keybinds.global),
         (Pane::Editor, VimMode::Normal) => state.keybinds.global.editor_normal_help_text(),
         (Pane::Editor, VimMode::Insert) => state.keybinds.global.editor_insert_help_text(),

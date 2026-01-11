@@ -4,6 +4,7 @@ pub enum Pane {
     FileList,
     Editor,
     ContainerList,
+    Splash,
 }
 
 impl Pane {
@@ -13,6 +14,7 @@ impl Pane {
             Pane::FileList => "FileList",
             Pane::Editor => "Editor",
             Pane::ContainerList => "ContainerList",
+            Pane::Splash => "Splash",
         }
     }
 
@@ -22,6 +24,7 @@ impl Pane {
             "FileList" => Some(Pane::FileList),
             "Editor" => Some(Pane::Editor),
             "ContainerList" => Some(Pane::ContainerList),
+            "Splash" => Some(Pane::Splash),
             _ => None,
         }
     }

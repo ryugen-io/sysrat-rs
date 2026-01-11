@@ -34,6 +34,7 @@ pub fn render_dependency(
         "ratzilla" => env!("RATZILLA_VERSION"),
         "ratatui" => env!("RATATUI_VERSION"),
         "axum" => env!("AXUM_VERSION"),
+        "tachyonfx" => env!("TACHYONFX_VERSION"),
         _ => "unknown",
     };
     let s = get_style(style, theme);

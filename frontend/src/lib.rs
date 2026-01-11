@@ -37,6 +37,10 @@ pub fn main() -> Result<(), JsValue> {
         ratzilla::ratatui::Terminal::new(backend).map_err(|e| JsValue::from_str(&e.to_string()))?;
 
     // Load data based on restored pane
+    web_sys::console::log_1(&wasm_bindgen::JsValue::from_str(&format!(
+        "[DEBUG] Initial focus: {:?}",
+        app_state.borrow().focus
+    )));
     init::load_pane_data(&app_state);
 
     // Start background refresh for container list (every 10 seconds)

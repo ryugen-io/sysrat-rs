@@ -40,7 +40,7 @@ def load_env_config(repo_root: Path) -> dict:
                 config[key] = value
 
     # Validate required keys
-    required_keys = ['SERVER_BINARY', 'DISPLAY_NAME', 'SERVER_HOST', 'SERVER_PORT']
+    required_keys = ['SERVER_BINARY', 'DISPLAY_NAME', 'SERVER_PORT']
     missing = [key for key in required_keys if key not in config]
     if missing:
         raise ValueError(f"Missing required config keys in .env: {', '.join(missing)}")
@@ -56,6 +56,18 @@ def is_running(pid: int) -> bool:
         return True
     except subprocess.CalledProcessError:
         return False
+
+
+def get_display_host() -> str:
+    """Get the primary IP address for display purposes"""
+    import socket
+    try:
+        # Connect to external address to determine primary interface IP
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(('8.8.8.8', 80))
+            return s.getsockname()[0]
+    except OSError:
+        return 'localhost'
 
 
 def check_port(port: str) -> bool:
@@ -88,7 +100,7 @@ def main():
     display_name = config['DISPLAY_NAME']
     app_name = 'sysrat'
     port = config['SERVER_PORT']
-    host = config['SERVER_HOST']
+    display_host = get_display_host()
 
     # Get XDG-compliant paths
     pid_file = get_pid_file(app_name, config)
@@ -114,7 +126,7 @@ def main():
             if is_running(old_pid):
                 log_warn(f"Server already running (PID: {old_pid})")
                 print()
-                log_info(f"URL: {Colors.SAPPHIRE}http://{host}:{port}{Colors.NC}")
+                log_info(f"URL: {Colors.SAPPHIRE}http://{display_host}:{port}{Colors.NC}")
                 log_info(f"Logs: {Colors.BLUE}tail -f {log_file}{Colors.NC}")
                 log_info(f"Stop: {Colors.BLUE}./stop.py{Colors.NC}")
                 print()
@@ -173,7 +185,7 @@ def main():
             print()
             log_success(f"{display_name} is running (PID: {server_pid})")
             print()
-            log_info(f"URL: {Colors.SAPPHIRE}http://{host}:{port}{Colors.NC}")
+            log_info(f"URL: {Colors.SAPPHIRE}http://{display_host}:{port}{Colors.NC}")
             log_info(f"Logs: {Colors.BLUE}tail -f {log_file}{Colors.NC}")
             log_info(f"Stop: {Colors.BLUE}./stop.py{Colors.NC}")
             print()
